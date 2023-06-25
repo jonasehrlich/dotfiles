@@ -14,5 +14,8 @@
 	autoCorrect = "immediate"
 [core]
 	pager = less -X -F 	# Configure less to exit immediately if paging output is less than one screen
+	excludesfile = ~/.gitignore
 [rebase]
 	autostash = true
+[push]
+	autoSetupRemote = true
