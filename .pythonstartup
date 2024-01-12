@@ -1,0 +1,62 @@
+from __future__ import annotations
+
+import asyncio
+import collections
+import contextlib
+import dataclasses
+import datetime
+import enum
+import functools
+import inspect
+import itertools
+import json
+import logging
+import math
+import os
+import re
+import socket
+import statistics
+import subprocess
+import typing as ty
+import unittest
+from collections.abc import *
+from dataclasses import dataclass, field
+from enum import *
+from pathlib import Path
+from typing import *
+from unittest import mock
+
+__missing_modules__: list[str] = []
+
+
+@contextlib.contextmanager
+def try_import():
+    try:
+        yield
+    except ImportError as exc:
+        if exc.name:
+            __missing_modules__.append(exc.name)
+
+
+with try_import():
+    import matplotlib.pyplot as plt
+
+with try_import():
+    import numpy as np
+
+with try_import():
+    import pydantic
+    from pydantic import BaseModel, Field
+
+with try_import():
+    import requests
+
+with try_import():
+    import scipy as sp
+    import scipy.io as sio
+
+with try_import():
+    import yaml
+
+if __missing_modules__:
+    print("Missing modules:", ", ".join(sorted(__missing_modules__)))
