@@ -111,7 +111,7 @@ def stage(
             if flag_name in cfg.skipped_stages:
                 return
             if predicate is not None and not predicate():
-                print(f"Running '{name}' is not required, skipped")
+                print(f"'{name}' is not required, skip")
                 return
             if confirm_before_run and not confirm(f"{name}?", default="y"):
                 return
@@ -170,10 +170,10 @@ def check_if_files_differ(source: pathlib.Path, destination: pathlib.Path, cfg: 
     :param backup: Whether to directly move the file to a backup location if content differs, defaults to False
     :return: Whether the file differs
     """
-    return check_if_file_differs_from_text(source.read_text(), destination, cfg, backup)
+    return check_if_file_content_differs_from_text(source.read_text(), destination, cfg, backup)
 
 
-def check_if_file_differs_from_text(text: str, destination: pathlib.Path, cfg: Config, backup: bool = False) -> bool:
+def check_if_file_content_differs_from_text(text: str, destination: pathlib.Path, cfg: Config, backup: bool = False) -> bool:
     """Check if the content of a file differs from a text
 
     :param text: Text to check the file content against
@@ -193,7 +193,7 @@ def check_if_file_differs_from_text(text: str, destination: pathlib.Path, cfg: C
 def safe_symlink(source: pathlib.Path, destination: pathlib.Path, cfg: Config) -> None:
     if destination.is_dir():
         destination = destination / source.name
-    check_if_files_differ(source, destination, cfg, backup=True)
+    backup_if_file_exists(destination, cfg)
     print(f"Create symlink from {destination} to {source}")
     destination.symlink_to(source)
 
@@ -208,7 +208,7 @@ def configure_git(cfg: Config) -> None:
     gitconfig_template = string.Template((THIS_DIR / ".gitconfig").read_text())
     new_gitconfig = gitconfig_template.safe_substitute(full_name=cfg.full_name, email=git_email)
     user_gitconfig = pathlib.Path.home() / ".gitconfig"
-    check_if_file_differs_from_text(new_gitconfig, user_gitconfig, cfg, backup=True)
+    check_if_file_content_differs_from_text(new_gitconfig, user_gitconfig, cfg, backup=True)
 
 
 @stage("Configure tmux", confirm_before_run=False)
