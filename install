@@ -16,7 +16,7 @@ import re
 import string
 import subprocess
 import sys
-from typing import TYPE_CHECKING, Any, Generator, Literal, cast
+from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, cast
 
 if sys.version_info > (3, 11):
     from typing import NoReturn, Self
@@ -185,9 +185,7 @@ class Config:
     full_name: str
     email: str
     confirm_all_stages: bool
-    platform: Platforms = dataclasses.field(
-        default_factory=cast(collections.abc.Callable[[], Platforms], platform.system)
-    )
+    platform: Platforms = dataclasses.field(default_factory=cast(Callable[[], Platforms], platform.system))
     skipped_stages: list[str] = dataclasses.field(default_factory=list)
     timestamp: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
 
