@@ -55,17 +55,16 @@ def configure_logging(verbose: bool) -> None:
 
 
 @contextlib.contextmanager
-def indent_logger(indent: int = 2) -> Generator[None, Any, None]:
-    spaces = " " * indent
+def indent_logger(indent: str = "  ") -> Generator[None, Any, None]:
     for handler in _logger.handlers:
         if handler.formatter and handler.formatter._fmt:
-            handler.formatter._fmt = spaces + handler.formatter._fmt
+            handler.setFormatter(logging.Formatter(indent + handler.formatter._fmt))
     try:
         yield
     finally:
         for handler in _logger.handlers:
             if handler.formatter and handler.formatter._fmt:
-                handler.formatter._fmt = handler.formatter._fmt[indent:]
+                handler.setFormatter(logging.Formatter(handler.formatter._fmt[len(indent) :]))
 
 
 def input_with_default(_prompt: str, default: str | None) -> str:
