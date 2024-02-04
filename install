@@ -173,7 +173,9 @@ def check_if_files_differ(source: pathlib.Path, destination: pathlib.Path, cfg: 
     return check_if_file_content_differs_from_text(source.read_text(), destination, cfg, backup)
 
 
-def check_if_file_content_differs_from_text(text: str, destination: pathlib.Path, cfg: Config, backup: bool = False) -> bool:
+def check_if_file_content_differs_from_text(
+    text: str, destination: pathlib.Path, cfg: Config, backup: bool = False
+) -> bool:
     """Check if the content of a file differs from a text
 
     :param text: Text to check the file content against
@@ -271,14 +273,17 @@ def main() -> NoReturn:
     except Exception as exc:
         parser.exit(status=1, message=f"Error creating configuration: {exc}")
 
-    configure_git(cfg)
-    configure_tmux(cfg)
-    configure_pythonstartup(cfg)
-    install_omz(cfg)
-    install_fzf(cfg)
-    install_pyenv(cfg)
-    install_vscode_extensions(cfg)
-    install_zshrc(cfg)
+    try:
+        configure_git(cfg)
+        configure_tmux(cfg)
+        configure_pythonstartup(cfg)
+        install_omz(cfg)
+        install_fzf(cfg)
+        install_pyenv(cfg)
+        install_vscode_extensions(cfg)
+        install_zshrc(cfg)
+    except KeyboardInterrupt:
+        parser.exit(status=2, message="Aborted!")
 
     sys.exit(0)
 
