@@ -10,18 +10,16 @@ import getpass
 import pathlib
 import platform
 import pwd
-import shutil
 import string
 import subprocess
 import sys
-import re
-from typing import Any, Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
 
 if sys.version_info > (3, 11):
-    from typing import Self, NoReturn
+    from typing import NoReturn, Self
 else:
     if TYPE_CHECKING:
-        from typing_extensions import Self, NoReturn
+        from typing_extensions import NoReturn, Self
 
 
 THIS_DIR = pathlib.Path(__file__).parent
@@ -158,8 +156,8 @@ def backup_if_file_exists(path: pathlib.Path, cfg: Config) -> None | pathlib.Pat
 
     if path.is_file():
         backup_path = path / f"{path.name}.pre-dotfiles-installer-{cfg.timestamp}"
-        print(f"Moving existing {path.name} file to {backup_path}")
-        shutil.move(path, backup_path)
+        print(f"Rename existing {path.name} file to {backup_path}")
+        path.rename(backup_path)
         return backup_path
 
 
