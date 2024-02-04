@@ -72,7 +72,7 @@ ZSH_THEME="cypher"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git poetry pyenv)
 
-path=("$HOME/.local/bin"$path)
+path=("$HOME/.local/bin" $path)
 
 source $ZSH/oh-my-zsh.sh
 
