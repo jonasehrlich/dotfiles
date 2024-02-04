@@ -263,7 +263,7 @@ def ensure_zshrc_settings(cfg: Config):
 
     print("Set ZSH_THEME")
     content = re.sub(r"ZSH_THEME=.*\n", 'ZSH_THEME="cypher"\n', content)
-    
+
     print("Set PYTHONSTARTUP")
     pythonstartup_var_line = 'PYTHONSTARTUP="$HOME/.pythonstartup"\n'
     if "PYTHONSTARTUP=" in content:
@@ -271,8 +271,6 @@ def ensure_zshrc_settings(cfg: Config):
     else:
         content += "# Set PYTHONSTARTUP variable to load a script before starting an interactive shell"
         content += pythonstartup_var_line
-    
-    
 
 
 def main() -> NoReturn:
