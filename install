@@ -150,6 +150,7 @@ class Config:
 def backup_if_file_exists(path: pathlib.Path, cfg: Config) -> None | pathlib.Path:
     """Backup a file if it exists. If it is only a symlink remove it"""
     if path.is_symlink():
+        print(f"Remove symlink of {path} to {path.resolve()}")
         path.unlink()
         return
 
@@ -240,7 +241,10 @@ def install_pyenv(cfg: Config) -> None:
 
 @stage("Install fzf", confirm_before_run=True)
 def install_fzf(cfg: Config) -> None:
-    subprocess.run(["git", "clone", "--depth", "1", "https://github.com/junegunn/fzf.git", "~/.fzf"], check=True)
+    subprocess.run(
+        ["git", "clone", "--depth", "1", "https://github.com/junegunn/fzf.git", str(pathlib.Path.home() / ".fzf")],
+        check=True,
+    )
     subprocess.run(["~/.fzf/install"], shell=True, check=True)
 
 
