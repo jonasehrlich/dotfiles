@@ -194,6 +194,7 @@ def safe_symlink(source: pathlib.Path, destination: pathlib.Path, cfg: Config) -
     if destination.is_dir():
         destination = destination / source.name
     check_if_files_differ(source, destination, cfg, backup=True)
+    print(f"Create symlink from {destination} to {source}")
     destination.symlink_to(source)
 
 
@@ -224,7 +225,7 @@ def cmd_missing(cmd: str) -> bool:
     return subprocess.run(["which", cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0
 
 
-@stage("Install oh-my-zsh", confirm_before_run=True, predicate=functools.partial(cmd_missing, "omz"))
+@stage("Install oh-my-zsh", confirm_before_run=True, predicate=functools.partial(cmd_missing, "omz"), abort_on_error=False)
 def install_omz(cfg: Config) -> None:
     subprocess.run(
         'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',
