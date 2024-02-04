@@ -322,7 +322,7 @@ def link_pythonstartup(cfg: Config) -> None:
 )
 def install_omz(cfg: Config) -> None:
     subprocess.run(
-        '/usr/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',
+        'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',  # noqa: S607
         stdin=subprocess.DEVNULL,
         check=True,
         shell=True,  # noqa: S602
