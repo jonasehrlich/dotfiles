@@ -32,6 +32,7 @@ src_paths = ["plantuml_sequence", "test"]
 
 [tool.mypy]
 strict = true
+files = ["install"]
 
 [tool.ruff]
 line-length = 120
