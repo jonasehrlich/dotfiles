@@ -110,6 +110,10 @@ typeset -T LIBRARY_PATH library_path :
 typeset -T CPATH cpath :
 typeset -T C_INCLUDE_PATH c_include_path :
 
+if [[ $(uname) == "Darwin" ]]; then
+  source .zshrc.macos.zsh
+fi
+
 # Enable pyenv if it exists
 export PYENV_ROOT="$HOME/.pyenv"
 if [ -d $PYENV_ROOT ]; then
