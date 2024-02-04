@@ -99,7 +99,7 @@ def stage(
 ) -> collections.abc.Callable[..., collections.abc.Callable[[Config], None]]:
     def dec(func: collections.abc.Callable[[Config], None]) -> collections.abc.Callable[[Config], Any]:
         flag_name = name.lower().replace(" ", "-")
-        parser.add_argument(
+        skip_stages_group.add_argument(
             f"--no-{flag_name}",
             action="append_const",
             dest="skipped_stages",
@@ -206,9 +206,8 @@ def safe_symlink(source: pathlib.Path, destination: pathlib.Path, cfg: Config) -
 def configure_git(cfg: Config) -> None:
     safe_symlink(THIS_DIR / ".gitignore", pathlib.Path.home(), cfg)
 
-    git_email = prompt("E-Mail address for .gitconfig:", default=cfg.email)
     gitconfig_template = string.Template((THIS_DIR / ".gitconfig").read_text())
-    new_gitconfig = gitconfig_template.safe_substitute(full_name=cfg.full_name, email=git_email)
+    new_gitconfig = gitconfig_template.safe_substitute(full_name=cfg.full_name, email=cfg.email)
     user_gitconfig = pathlib.Path.home() / ".gitconfig"
     check_if_file_content_differs_from_text(new_gitconfig, user_gitconfig, cfg, backup=True)
 
