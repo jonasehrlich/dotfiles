@@ -16,15 +16,15 @@ import re
 import string
 import subprocess
 import sys
-from typing import TYPE_CHECKING, Any, Generator, Literal, cast
+from typing import TYPE_CHECKING, Any, Generator, Literal, TypeAlias, cast
 
 if sys.version_info > (3, 11):
     from typing import NoReturn, Self
 elif TYPE_CHECKING:
     from typing_extensions import NoReturn, Self
 
+Platforms: TypeAlias = Literal["Linux", "Darwin", "Java", "Windows"]
 _logger = logging.getLogger("install")
-
 THIS_DIR = pathlib.Path(__file__).parent
 
 parser = argparse.ArgumentParser(
@@ -177,9 +177,6 @@ def stage(
         return wrapper
 
     return dec
-
-
-Platforms = Literal["Linux", "Darwin", "Java", "Windows"]
 
 
 @dataclasses.dataclass

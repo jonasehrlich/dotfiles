@@ -14,7 +14,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.8"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.1.1"
