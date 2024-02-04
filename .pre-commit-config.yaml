@@ -1,20 +1,26 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: "v4.5.0"
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
-  - repo: https://github.com/psf/black
-    rev: "22.6.0"
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: "24.1.1"
     hooks:
       - id: black
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
+        args:
+          - "install"
+  - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: "v0.0.256"
+    rev: "v0.2.0"
     hooks:
       - id: ruff
+        args:
+          - "install"
   - repo: https://github.com/pycqa/isort
-    rev: "5.12.0"
+    rev: "5.13.2"
     hooks:
       - id: isort
+        args:
+          - "install"
