@@ -259,26 +259,6 @@ def install_vscode_extensions(cfg: Config) -> None:
             raise
 
 
-@stage("Ensure .zshrc settings", confirm_before_run=True, abort_on_error=False)
-def ensure_zshrc_settings(cfg: Config):
-    backup_path = backup_if_file_exists(zshrc, cfg)
-    if not backup_path:
-        print(f"No exising {zshrc}, cannot ensure settings")
-        return
-    content = backup_path.read_text()
-
-    print("Set ZSH_THEME")
-    content = re.sub(r"ZSH_THEME=.*\n", 'ZSH_THEME="cypher"\n', content)
-
-    print("Set PYTHONSTARTUP")
-    pythonstartup_var_line = 'PYTHONSTARTUP="$HOME/.pythonstartup"\n'
-    if "PYTHONSTARTUP=" in content:
-        content = re.sub(r"PYTHONSTARTUP=.*\n", pythonstartup_var_line, content)
-    else:
-        content += "# Set PYTHONSTARTUP variable to load a script before starting an interactive shell"
-        content += pythonstartup_var_line
-
-
 def main() -> NoReturn:
     namespace = parser.parse_args()
     try:

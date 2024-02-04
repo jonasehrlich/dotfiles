@@ -116,3 +116,6 @@ if [ -d $PYENV_ROOT ]; then
   command -v pyenv > /dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
   eval "$(pyenv init -)"
 fi
+
+# Set PYTHONSTARTUP variable to load a script before starting an interactive shell"
+PYTHONSTARTUP="$HOME/.pythonstartup"
