@@ -95,7 +95,7 @@ def stage(
     name: str,
     confirm_before_run: bool,
     predicate: collections.abc.Callable[[], bool] | None = None,
-    abort_on_error: bool = True,
+    abort_on_error: bool = False,
 ) -> collections.abc.Callable[..., collections.abc.Callable[[Config], None]]:
     def dec(func: collections.abc.Callable[[Config], None]) -> collections.abc.Callable[[Config], Any]:
         flag_name = name.lower().replace(" ", "-")
@@ -225,7 +225,9 @@ def cmd_missing(cmd: str) -> bool:
     return subprocess.run(["which", cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0
 
 
-@stage("Install oh-my-zsh", confirm_before_run=True, predicate=functools.partial(cmd_missing, "omz"), abort_on_error=False)
+@stage(
+    "Install oh-my-zsh", confirm_before_run=True, predicate=functools.partial(cmd_missing, "omz"), abort_on_error=False
+)
 def install_omz(cfg: Config) -> None:
     subprocess.run(
         'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',
