@@ -26,14 +26,19 @@ elif TYPE_CHECKING:
 _logger = logging.getLogger("install")
 
 THIS_DIR = pathlib.Path(__file__).parent
-zshrc = pathlib.Path.home() / ".zshrc"
-
 
 parser = argparse.ArgumentParser(
     prog="dotfiles-installer", description="Helper script to install the dotfiles in this repository"
 )
 parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
 parser.add_argument("--email", help="E-Mail address to use for configuration")
+parser.add_argument(
+    "--confirm-all-stages",
+    "-y",
+    default=False,
+    action="store_true",
+    help="Confirm execution of all stages",
+)
 skip_stages_group = parser.add_argument_group(
     "Skip stages", description="Arguments to skip individual stages of the installation"
 )
@@ -102,7 +107,7 @@ def confirm(prompt_: str, default: Literal["y", "n"] | None = None) -> bool:
 def prompt(
     prompt_: str,
     default: str | None = None,
-    confirm_value: bool = True,
+    confirm_required: bool = True,
     validator: collections.abc.Callable[[str], bool] | None = None,
 ) -> str:
     input_prompt = f"{prompt_} ({default})" if default is not None else prompt_
@@ -114,19 +119,28 @@ def prompt(
 
     if validator is not None and not validator(resp):
         print(f"Invalid input: {resp}")
-        return prompt(prompt_, default, confirm_value, validator)
+        return prompt(prompt_, default, confirm_required, validator)
 
-    if confirm_value and not confirm(f"Use '{resp}'?", default="y"):
-        return prompt(prompt_, default=default, confirm_value=confirm_value, validator=validator)
+    if confirm_required and not confirm(f"Confirm '{resp}'?", default="y"):
+        return prompt(prompt_, default=default, confirm_required=confirm_required, validator=validator)
     return resp
 
 
 def stage(
     name: str,
-    confirm_before_run: bool = False,
+    interactive_confirm: bool = False,
     predicate: collections.abc.Callable[[], bool] | None = None,
     abort_on_error: bool = False,
 ) -> collections.abc.Callable[..., collections.abc.Callable[[Config], None]]:
+    """Make a function to wrap a function as a stage of the installation
+
+    :param name: Name of the stage
+    :param interactive_confirm: Whether execution of this stage requires an interactive confirm, defaults to False
+    :param predicate: Function returning at runtime whether this stage should run, defaults to None
+    :param abort_on_error: Whether to abort installation on error, defaults to False
+    :return: Decorator function
+    """
+
     def dec(func: collections.abc.Callable[[Config], None]) -> collections.abc.Callable[[Config], Any]:
         flag_name = name.lower().replace(" ", "-").replace(".", "")
         skip_stages_group.add_argument(
@@ -144,7 +158,7 @@ def stage(
             if predicate is not None and not predicate():
                 _logger.info(f"{name} is not required, skip")
                 return
-            if confirm_before_run and not confirm(f"{name}?", default="y"):
+            if not cfg.confirm_all_stages and interactive_confirm and not confirm(f"{name}?", default="y"):
                 return
 
             _logger.info(f"{name} ...")
@@ -173,6 +187,7 @@ class Config:
     username: str
     full_name: str
     email: str
+    confirm_all_stages: bool
     platform: Platforms = dataclasses.field(
         default_factory=cast(collections.abc.Callable[[], Platforms], platform.system)
     )
@@ -180,11 +195,14 @@ class Config:
     timestamp: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
 
     @classmethod
-    def from_env(cls, email: str | None, skipped_stages: list[str], **kwargs: Any) -> Self:
+    def from_env(cls, email: str, skipped_stages: list[str], confirm_all_stages: bool, **kwargs: Any) -> Self:
         username = getpass.getuser()
-        email = email or prompt("Default E-Mail address?")
         return cls(
-            username=username, full_name=pwd.getpwnam(username).pw_name, email=email, skipped_stages=skipped_stages
+            username=username,
+            full_name=pwd.getpwnam(username).pw_name,
+            email=email,
+            confirm_all_stages=confirm_all_stages,
+            skipped_stages=skipped_stages,
         )
 
 
@@ -303,7 +321,7 @@ def link_pythonstartup(cfg: Config) -> None:
 
 @stage(
     "Install oh-my-zsh",
-    confirm_before_run=True,
+    interactive_confirm=True,
     predicate=functools.partial(not_, (pathlib.Path.home() / ".oh-my-zsh").exists),
     abort_on_error=False,
 )
@@ -317,13 +335,17 @@ def install_omz(cfg: Config) -> None:
 
 
 @stage(
-    "Install pyenv", confirm_before_run=True, predicate=functools.partial(not_, (pathlib.Path.home() / ".pyenv").exists)
+    "Install pyenv",
+    interactive_confirm=True,
+    predicate=functools.partial(not_, (pathlib.Path.home() / ".pyenv").exists),
 )
 def install_pyenv(cfg: Config) -> None:
     subprocess.run("curl https://pyenv.run | bash", shell=True, check=True)  # noqa: S602, S607
 
 
-@stage("Install fzf", confirm_before_run=True, predicate=functools.partial(not_, (pathlib.Path.home() / ".fzf").exists))
+@stage(
+    "Install fzf", interactive_confirm=True, predicate=functools.partial(not_, (pathlib.Path.home() / ".fzf").exists)
+)
 def install_fzf(cfg: Config) -> None:
     fzf_dir = pathlib.Path.home() / ".fzf"
     subprocess.run(
@@ -349,7 +371,7 @@ def validate_vscode_extension_names(extensions: collections.abc.Iterable[str]) -
             raise ValueError(f"Invalid extension name: {extension}")
 
 
-@stage("Install VSCode extensions", confirm_before_run=True, abort_on_error=False)
+@stage("Install VSCode extensions", interactive_confirm=True, abort_on_error=False)
 def install_vscode_extensions(cfg: Config) -> None:
     proc = subprocess.run(
         ["code", "--list-extensions"], stdout=subprocess.PIPE, encoding="UTF-8", check=True  # noqa: S603, S607
@@ -386,6 +408,8 @@ def link_zshrc(cfg: Config) -> None:
 
 def main() -> NoReturn:
     namespace = parser.parse_args()
+    if not namespace.email:
+        namespace.email = prompt("Default E-Mail address?")
     configure_logging(namespace.verbose)
 
     try:
