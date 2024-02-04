@@ -232,15 +232,15 @@ class DotfileManager:
             _logger.info("%s is up-to-date", destination)
             return
         else:
-            _logger.info("%s differs from desired content")
+            _logger.info("%s differs from desired content", destination)
 
         self._cleanup_destination_path(destination)
         _logger.info("Write %s", destination)
         destination.write_text(text)
 
 
-def file_is_not_symlinked(symlink: pathlib.Path, path: pathlib.Path) -> bool:
-    return symlink.is_symlink() and symlink.resolve() != path.resolve()
+def file_is_symlinked(symlink: pathlib.Path, path: pathlib.Path) -> bool:
+    return symlink.is_symlink() and symlink.resolve() == path.resolve()
 
 
 def not_(func: collections.abc.Callable[[], bool]) -> bool:
@@ -261,7 +261,7 @@ def configure_gitconfig(cfg: Config) -> None:
 @stage(
     "Configure .gitignore",
     confirm_before_run=False,
-    predicate=functools.partial(file_is_not_symlinked, pathlib.Path.home() / ".gitignore", THIS_DIR / ".gitignore"),
+    predicate=functools.partial(file_is_symlinked, pathlib.Path.home() / ".gitignore", THIS_DIR / ".gitignore"),
 )
 def configure_gitignore(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".gitignore", pathlib.Path.home())
@@ -270,7 +270,7 @@ def configure_gitignore(cfg: Config) -> None:
 @stage(
     "Configure tmux.conf",
     confirm_before_run=False,
-    predicate=functools.partial(file_is_not_symlinked, pathlib.Path.home() / ".tmux.conf", THIS_DIR / ".tmux.conf"),
+    predicate=functools.partial(file_is_symlinked, pathlib.Path.home() / ".tmux.conf", THIS_DIR / ".tmux.conf"),
 )
 def configure_tmux(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".tmux.conf", pathlib.Path.home())
@@ -280,7 +280,7 @@ def configure_tmux(cfg: Config) -> None:
     "Configure .pythonstartup",
     confirm_before_run=False,
     predicate=functools.partial(
-        file_is_not_symlinked, pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"
+        file_is_symlinked, pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"
     ),
 )
 def configure_pythonstartup(cfg: Config) -> None:
@@ -343,7 +343,7 @@ def install_vscode_extensions(cfg: Config) -> None:
 @stage(
     "Install .zshrc",
     confirm_before_run=True,
-    predicate=functools.partial(file_is_not_symlinked, pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
+    predicate=functools.partial(file_is_symlinked, pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
 )
 def install_zshrc(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".zshrc", pathlib.Path.home())
