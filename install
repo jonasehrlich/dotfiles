@@ -115,7 +115,7 @@ def stage(
                 return
             if confirm_before_run and not confirm(f"{name}?", default="y"):
                 return
-
+            print(f"{name}...")
             try:
                 func(cfg)
             except Exception as exc:
@@ -200,8 +200,6 @@ def safe_symlink(source: pathlib.Path, destination: pathlib.Path, cfg: Config) -
 
 @stage("Configure Git", confirm_before_run=False)
 def configure_git(cfg: Config) -> None:
-
-    print("Install .gitignore")
     safe_symlink(THIS_DIR / ".gitignore", pathlib.Path.home(), cfg)
 
     git_email = prompt("E-Mail address for .gitconfig:", default=cfg.email)
