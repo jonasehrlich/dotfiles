@@ -195,14 +195,14 @@ class Config:
     timestamp: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
 
     @classmethod
-    def from_env(cls, email: str, skipped_stages: list[str], confirm_all_stages: bool, **kwargs: Any) -> Self:
+    def from_env(cls, email: str, skipped_stages: list[str] | None, confirm_all_stages: bool, **kwargs: Any) -> Self:
         username = getpass.getuser()
         return cls(
             username=username,
             full_name=pwd.getpwnam(username).pw_name,
             email=email,
             confirm_all_stages=confirm_all_stages,
-            skipped_stages=skipped_stages,
+            skipped_stages=skipped_stages or [],
         )
 
 
