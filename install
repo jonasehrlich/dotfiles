@@ -113,7 +113,7 @@ def stage(
             if predicate is not None and not predicate():
                 print(f"Running '{name}' is not required, skipped")
                 return
-            if confirm_before_run and not confirm(f"Execute '{name}'?", default="y"):
+            if confirm_before_run and not confirm(f"{name}?", default="y"):
                 return
 
             try:
@@ -227,12 +227,13 @@ def cmd_missing(cmd: str) -> bool:
 def install_omz(cfg: Config) -> None:
     subprocess.run(
         'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',
+        stdin=subprocess.DEVNULL,
         check=True,
         shell=True,
     )
 
 
-@stage("Install Pyenv", confirm_before_run=True, predicate=functools.partial(cmd_missing, "pyenv"))
+@stage("Install pyenv", confirm_before_run=True, predicate=functools.partial(cmd_missing, "pyenv"))
 def install_pyenv(cfg: Config) -> None:
     subprocess.run("curl https://pyenv.run | bash", shell=True, check=True)
 
