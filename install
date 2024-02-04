@@ -136,7 +136,7 @@ class Config:
     full_name: str
     email: str
     platform: Literal["Linux", "Darwin", "Java", "Windows"] = dataclasses.field(default_factory=platform.system)
-    timestamp: str = dataclasses.field(default_factory=lambda: datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    timestamp: str = dataclasses.field(default_factory=lambda: datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
     skipped_stages: list[str] = dataclasses.field(default_factory=list)
 
     @classmethod
@@ -154,7 +154,7 @@ def backup_if_file_exists(path: pathlib.Path, cfg: Config) -> None | pathlib.Pat
         path.unlink()
         return
 
-    if path.exists():
+    if path.is_file():
         backup_path = path / f"{path.name}.pre-dotfiles-installer-{cfg.timestamp}"
         print(f"Moving existing {path.name} file to {backup_path}")
         shutil.move(path, backup_path)
