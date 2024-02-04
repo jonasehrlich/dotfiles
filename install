@@ -32,6 +32,7 @@ zshrc = pathlib.Path.home() / ".zshrc"
 parser = argparse.ArgumentParser(
     prog="dotfiles-installer", description="Helper script to install the dotfiles in this repository"
 )
+parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
 parser.add_argument("--email", help="E-Mail address to use for configuration")
 skip_stages_group = parser.add_argument_group(
     "Skip stages", description="Arguments to skip individual stages of the installation"
@@ -322,6 +323,8 @@ def install_zshrc(cfg: Config):
 
 def main() -> NoReturn:
     namespace = parser.parse_args()
+    configure_logging(namespace.verbose)
+
     try:
         cfg = Config.from_env(**vars(namespace))
     except Exception as exc:
