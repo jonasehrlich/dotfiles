@@ -262,7 +262,7 @@ def install_fzf(cfg: Config) -> None:
 @stage("Install VSCode extensions", confirm_before_run=True, abort_on_error=False)
 def install_vscode_extensions(cfg: Config) -> None:
     args: list[str] = []
-    for extension in (THIS_DIR / "vscode-extensions").read_text().splitlines():
+    for extension in (THIS_DIR / "vscode-extensions.txt").read_text().splitlines():
         args.append("--install-extension")
         args.append(extension)
     try:
