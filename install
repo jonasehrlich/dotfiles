@@ -155,7 +155,7 @@ def backup_if_file_exists(path: pathlib.Path, cfg: Config) -> None | pathlib.Pat
         return
 
     if path.is_file():
-        backup_path = path / f"{path.name}.pre-dotfiles-installer-{cfg.timestamp}"
+        backup_path = path.parent / f"{path.name}.pre-dotfiles-installer-{cfg.timestamp}"
         print(f"Rename existing {path.name} file to {backup_path}")
         path.rename(backup_path)
         return backup_path
