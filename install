@@ -128,7 +128,7 @@ def stage(
     abort_on_error: bool = False,
 ) -> collections.abc.Callable[..., collections.abc.Callable[[Config], None]]:
     def dec(func: collections.abc.Callable[[Config], None]) -> collections.abc.Callable[[Config], Any]:
-        flag_name = name.lower().replace(" ", "-")
+        flag_name = name.lower().replace(" ", "-").replace(".", "")
         skip_stages_group.add_argument(
             f"--no-{flag_name}",
             action="append_const",
@@ -171,8 +171,8 @@ class Config:
     full_name: str
     email: str
     platform: Literal["Linux", "Darwin", "Java", "Windows"] = dataclasses.field(default_factory=platform.system)
-    timestamp: str = dataclasses.field(default_factory=lambda: datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
     skipped_stages: list[str] = dataclasses.field(default_factory=list)
+    timestamp: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
 
     @classmethod
     def from_env(cls, email: str | None, skipped_stages: list[str], **kwargs: Any) -> Self:
@@ -182,67 +182,65 @@ class Config:
         return cls(username=username, full_name=pwd.getpwnam(username).pw_name, email=email)
 
 
-def backup_if_file_exists(path: pathlib.Path, cfg: Config) -> None | pathlib.Path:
-    """Backup a file if it exists. If it is only a symlink remove it"""
-    if path.is_symlink():
-        _logger.info(f"Remove symlink of {path} to {path.resolve()}")
-        path.unlink()
-        return
+class DotfileManager:
+    def __init__(self, timestamp: datetime.datetime) -> None:
+        self._timestamp = timestamp
+        self._backup_suffix = f".pre-dotfiles-installer-{self._timestamp.strftime("%Y-%m-%d_%H-%M-%S")}"
 
-    if path.is_file():
-        backup_path = path.parent / f"{path.name}.pre-dotfiles-installer-{cfg.timestamp}"
-        _logger.info(f"Rename existing {path.name} file to {backup_path}")
-        path.rename(backup_path)
-        return backup_path
+    def _cleanup_destination_path(self, path: pathlib.Path) -> None:
+        self._backup_file(path)
+        self._cleanup_symlink(path)
 
+    def _backup_file(self, path: pathlib.Path) -> pathlib.Path | None:
+        if path.is_file():
+            backup_path = path.parent / f"{path.name}.{self._backup_suffix}"
+            _logger.info(f"Rename existing {path.name} file to {backup_path}")
+            path.rename(backup_path)
+            return backup_path
 
-def check_if_files_differ(source: pathlib.Path, destination: pathlib.Path, cfg: Config, backup: bool = False) -> bool:
-    """Check if the content of two files differs
+    def _cleanup_symlink(self, path: pathlib.Path) -> None:
+        if path.is_symlink():
+            _logger.info("Remove symlink of %s to %s", path, path.resolve())
+            path.unlink()
 
-    :param source: File to be used as the new base
-    :param destination: File to check against
-    :param cfg: Installer config
-    :param backup: Whether to directly move the file to a backup location if content differs, defaults to False
-    :return: Whether the file differs
-    """
-    return check_if_file_content_differs_from_text(source.read_text(), destination, cfg, backup)
-
-
-def check_if_file_content_differs_from_text(
-    text: str, destination: pathlib.Path, cfg: Config, backup: bool = False
-) -> bool:
-    """Check if the content of a file differs from a text
-
-    :param text: Text to check the file content against
-    :param destination: File to check against
-    :param cfg: Installer config
-    :param backup: Whether to directly move the file to a backup location if content differs, defaults to False
-    :return: Whether the file differs
-    """
-    if not destination.is_file():
-        _logger.debug(f"{destination} does not exist")
+    def _file_content_matches(self, text: str, destination: pathlib.Path) -> bool:
+        if destination.is_file() and destination.read_text() == text:
+            return True
         return False
-    changed = destination.read_text() == text
-    if changed and backup:
-        backup_if_file_exists(destination, cfg)
-    return changed
+    
+    def safe_symlink(self, source: pathlib.Path, destination: pathlib.Path) -> None:
+        """Create a symlink. If `destination` is an existing file, back it up. 
+        If `destination` is a symlink, remove it first.
+
+        :param source: Source file
+        :param destination: Path to create the symlink in
+        """
+        if destination.is_dir():
+            destination = destination / source.name
+
+        self._cleanup_destination_path(destination)
+        _logger.info("Create symlink from %s to %s", destination, source)
+        destination.symlink_to(source)
+
+    def safe_write(self, text: str, destination: pathlib.Path) -> None:
+        """Write `text` to a file if it differs. If the file exists already back it up first
+
+        :param text: Text to write to `destination`
+        :param destination: Path of the file to write to
+        """
+        if self._file_content_matches(text, destination):
+            _logger.info("%s is up-to-date", destination)
+            return
+        else:
+            _logger.info("%s differs from desired content")
+
+        self._cleanup_destination_path(destination)
+        _logger.info("Write %s", destination)
+        destination.write_text(text)
 
 
-def safe_symlink(source: pathlib.Path, destination: pathlib.Path, cfg: Config) -> None:
-    if destination.is_dir():
-        destination = destination / source.name
-
-    if destination.is_symlink() and destination.resolve() == source.resolve():
-        # There is already a symbolic link to the source of the file in the repository, exit early
-        return
-
-    backup_if_file_exists(destination, cfg)
-    _logger.info(f"Create symlink from {destination} to {source}")
-    destination.symlink_to(source)
-
-
-def file_is_symlinked_to_repo(user_path: pathlib.Path, local_path: pathlib.Path):
-    return (pathlib.Path.home() / ".zshrc").resolve() != (THIS_DIR / ".zshrc").resolve()
+def file_is_not_symlinked(symlink: pathlib.Path, path: pathlib.Path) -> bool:
+    return symlink.is_symlink() and symlink.resolve() != path.resolve()
 
 
 def not_(func: collections.abc.Callable[[], bool]) -> bool:
@@ -254,41 +252,39 @@ def not_(func: collections.abc.Callable[[], bool]) -> bool:
     confirm_before_run=False,
 )
 def configure_gitconfig(cfg: Config) -> None:
-    gitconfig_template = string.Template((THIS_DIR / ".gitconfig").read_text())
-    new_gitconfig = gitconfig_template.safe_substitute(full_name=cfg.full_name, email=cfg.email)
-    user_gitconfig = pathlib.Path.home() / ".gitconfig"
-    check_if_file_content_differs_from_text(new_gitconfig, user_gitconfig, cfg, backup=True)
-    _logger.info("Writing .gitconfig")
-    user_gitconfig.write_text(new_gitconfig)
+    gitconfig_content = string.Template((THIS_DIR / ".gitconfig.template").read_text()).safe_substitute(
+        full_name=cfg.full_name, email=cfg.email
+    )
+    DotfileManager(cfg.timestamp).safe_write(gitconfig_content, pathlib.Path.home() / ".gitconfig")
 
 
 @stage(
     "Configure .gitignore",
     confirm_before_run=False,
-    predicate=functools.partial(file_is_symlinked_to_repo, pathlib.Path.home() / ".gitignore", THIS_DIR / ".gitignore"),
+    predicate=functools.partial(file_is_not_symlinked, pathlib.Path.home() / ".gitignore", THIS_DIR / ".gitignore"),
 )
 def configure_gitignore(cfg: Config) -> None:
-    safe_symlink(THIS_DIR / ".gitignore", pathlib.Path.home(), cfg)
+    DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".gitignore", pathlib.Path.home())
 
 
 @stage(
     "Configure tmux.conf",
     confirm_before_run=False,
-    predicate=functools.partial(file_is_symlinked_to_repo, pathlib.Path.home() / ".tmux.conf", THIS_DIR / ".tmux.conf"),
+    predicate=functools.partial(file_is_not_symlinked, pathlib.Path.home() / ".tmux.conf", THIS_DIR / ".tmux.conf"),
 )
 def configure_tmux(cfg: Config) -> None:
-    safe_symlink(THIS_DIR / ".tmux.conf", pathlib.Path.home(), cfg)
+    DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".tmux.conf", pathlib.Path.home())
 
 
 @stage(
     "Configure .pythonstartup",
     confirm_before_run=False,
     predicate=functools.partial(
-        file_is_symlinked_to_repo, pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"
+        file_is_not_symlinked, pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"
     ),
 )
 def configure_pythonstartup(cfg: Config) -> None:
-    safe_symlink(THIS_DIR / ".pythonstartup", pathlib.Path.home(), cfg)
+    DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".pythonstartup", pathlib.Path.home())
 
 
 @stage(
@@ -340,17 +336,17 @@ def install_vscode_extensions(cfg: Config) -> None:
     try:
         subprocess.run(["code", *args], check=True)
     except:
-        _logger.error(f"Error installing VSCode extensions")
+        _logger.error("Error installing VSCode extensions")
         raise
 
 
 @stage(
     "Install .zshrc",
     confirm_before_run=True,
-    predicate=functools.partial(file_is_symlinked_to_repo, pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
+    predicate=functools.partial(file_is_not_symlinked, pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
 )
 def install_zshrc(cfg: Config) -> None:
-    safe_symlink(THIS_DIR / ".zshrc", pathlib.Path.home(), cfg)
+    DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".zshrc", pathlib.Path.home())
 
 
 def main() -> NoReturn:
