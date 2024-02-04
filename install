@@ -185,7 +185,7 @@ class Config:
 class DotfileManager:
     def __init__(self, timestamp: datetime.datetime) -> None:
         self._timestamp = timestamp
-        self._backup_suffix = f".pre-dotfiles-installer-{self._timestamp.strftime("%Y-%m-%d_%H-%M-%S")}"
+        self._backup_suffix = f".pre-dotfiles-installer-{self._timestamp.strftime('%Y-%m-%d_%H-%M-%S')}"
 
     def _cleanup_destination_path(self, path: pathlib.Path) -> None:
         self._backup_file(path)
