@@ -404,7 +404,7 @@ def link_zshrc(cfg: Config) -> None:
 def main() -> NoReturn:
     namespace = parser.parse_args()
     if not namespace.email:
-        namespace.email = prompt("Default E-Mail address?")
+        namespace.email = prompt("Enter E-Mail address:")
     configure_logging(namespace.verbose)
 
     try:
