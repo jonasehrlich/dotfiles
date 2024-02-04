@@ -12,6 +12,7 @@ import logging
 import pathlib
 import platform
 import pwd
+import re
 import string
 import subprocess
 import sys
@@ -182,8 +183,9 @@ class Config:
     def from_env(cls, email: str | None, skipped_stages: list[str], **kwargs: Any) -> Self:
         username = getpass.getuser()
         email = email or prompt("Default E-Mail address?")
-        skipped_stages = skipped_stages
-        return cls(username=username, full_name=pwd.getpwnam(username).pw_name, email=email)
+        return cls(
+            username=username, full_name=pwd.getpwnam(username).pw_name, email=email, skipped_stages=skipped_stages
+        )
 
 
 class DotfileManager:
@@ -307,10 +309,10 @@ def link_pythonstartup(cfg: Config) -> None:
 )
 def install_omz(cfg: Config) -> None:
     subprocess.run(
-        'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',
+        '/usr/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',
         stdin=subprocess.DEVNULL,
         check=True,
-        shell=True,
+        shell=True,  # noqa: S602
     )
 
 
@@ -318,23 +320,45 @@ def install_omz(cfg: Config) -> None:
     "Install pyenv", confirm_before_run=True, predicate=functools.partial(not_, (pathlib.Path.home() / ".pyenv").exists)
 )
 def install_pyenv(cfg: Config) -> None:
-    subprocess.run("curl https://pyenv.run | bash", shell=True, check=True)
+    subprocess.run("curl https://pyenv.run | bash", shell=True, check=True)  # noqa: S602, S607
 
 
 @stage("Install fzf", confirm_before_run=True, predicate=functools.partial(not_, (pathlib.Path.home() / ".fzf").exists))
 def install_fzf(cfg: Config) -> None:
+    fzf_dir = pathlib.Path.home() / ".fzf"
     subprocess.run(
-        ["git", "clone", "--depth", "1", "https://github.com/junegunn/fzf.git", str(pathlib.Path.home() / ".fzf")],
+        [  # noqa: S603
+            "/usr/bin/git",
+            "clone",
+            "--depth",
+            "1",
+            "https://github.com/junegunn/fzf.git",
+            str(fzf_dir),
+        ],
         check=True,
     )
-    subprocess.run(["~/.fzf/install"], shell=True, check=True)
+    subprocess.run([str(fzf_dir / "install")], check=True)  # noqa: S603
+
+
+def validate_vscode_extension_names(extensions: collections.abc.Iterable[str]) -> None:
+    """Validate that VSCode extension names contain two elements, publisher and extension, separated by a dot.
+    Each element must only contain characters, numbers, dashes and underscores.
+    """
+    for extension in extensions:
+        if not re.match(r"^[\w\d_-]+\.[\w\d_-]+$", extension):
+            raise ValueError(f"Invalid extension name: {extension}")
 
 
 @stage("Install VSCode extensions", confirm_before_run=True, abort_on_error=False)
 def install_vscode_extensions(cfg: Config) -> None:
-    required_extensions = set((THIS_DIR / "vscode-extensions.txt").read_text().splitlines())
-    proc = subprocess.run(["code", "--list-extensions"], stdout=subprocess.PIPE, encoding="UTF-8", check=True)
+    proc = subprocess.run(
+        ["code", "--list-extensions"], stdout=subprocess.PIPE, encoding="UTF-8", check=True  # noqa: S603, S607
+    )
     available_extensions = set(proc.stdout.splitlines())
+    validate_vscode_extension_names(available_extensions)
+
+    required_extensions = set((THIS_DIR / "vscode-extensions.txt").read_text().splitlines())
+    validate_vscode_extension_names(required_extensions)
     extensions_to_install = required_extensions - available_extensions
 
     if not extensions_to_install:
@@ -346,7 +370,7 @@ def install_vscode_extensions(cfg: Config) -> None:
         args.append("--install-extension")
         args.append(extension)
     try:
-        subprocess.run(["code", *args], check=True)
+        subprocess.run(["code", *args], check=True)  # noqa: S603, S607
     except:
         _logger.error("Error installing VSCode extensions")
         raise
