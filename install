@@ -110,9 +110,11 @@ def stage(
         def wrapper(cfg: Config) -> None:
             if flag_name in cfg.skipped_stages:
                 return
+
             if predicate is not None and not predicate():
                 print(f"'{name}' is not required, skip")
                 return
+
             if confirm_before_run and not confirm(f"{name}?", default="y"):
                 return
             print(f"{name}...")
@@ -225,8 +227,15 @@ def cmd_missing(cmd: str) -> bool:
     return subprocess.run(["which", cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0
 
 
+def not_(func: collections.abc.Callable[[], bool]) -> bool:
+    return not func()
+
+
 @stage(
-    "Install oh-my-zsh", confirm_before_run=True, predicate=functools.partial(cmd_missing, "omz"), abort_on_error=False
+    "Install oh-my-zsh",
+    confirm_before_run=True,
+    predicate=functools.partial(not_, (pathlib.Path.home() / ".oh-my-zsh").exists),
+    abort_on_error=False,
 )
 def install_omz(cfg: Config) -> None:
     subprocess.run(
@@ -237,12 +246,14 @@ def install_omz(cfg: Config) -> None:
     )
 
 
-@stage("Install pyenv", confirm_before_run=True, predicate=functools.partial(cmd_missing, "pyenv"))
+@stage(
+    "Install pyenv", confirm_before_run=True, predicate=functools.partial(not_, (pathlib.Path.home() / ".pyenv").exists)
+)
 def install_pyenv(cfg: Config) -> None:
     subprocess.run("curl https://pyenv.run | bash", shell=True, check=True)
 
 
-@stage("Install fzf", confirm_before_run=True)
+@stage("Install fzf", confirm_before_run=True, predicate=functools.partial(not_, (pathlib.Path.home() / ".fzf").exists))
 def install_fzf(cfg: Config) -> None:
     subprocess.run(
         ["git", "clone", "--depth", "1", "https://github.com/junegunn/fzf.git", str(pathlib.Path.home() / ".fzf")],
@@ -283,7 +294,7 @@ def main() -> NoReturn:
         install_vscode_extensions(cfg)
         install_zshrc(cfg)
     except KeyboardInterrupt:
-        parser.exit(status=2, message="Aborted!")
+        parser.exit(status=2, message="\nAborted!\n")
 
     sys.exit(0)
 
