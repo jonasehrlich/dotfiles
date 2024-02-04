@@ -7,14 +7,15 @@ import dataclasses
 import datetime
 import functools
 import getpass
+import logging
 import pathlib
 import platform
 import pwd
 import string
 import subprocess
+import contextlib
 import sys
-from typing import TYPE_CHECKING, Any, Literal
-import json
+from typing import TYPE_CHECKING, Any, Literal, Generator
 
 if sys.version_info > (3, 11):
     from typing import NoReturn, Self
@@ -22,6 +23,7 @@ else:
     if TYPE_CHECKING:
         from typing_extensions import NoReturn, Self
 
+_logger = logging.getLogger("install")
 
 THIS_DIR = pathlib.Path(__file__).parent
 zshrc = pathlib.Path.home() / ".zshrc"
@@ -34,6 +36,35 @@ parser.add_argument("--email", help="E-Mail address to use for configuration")
 skip_stages_group = parser.add_argument_group(
     "Skip stages", description="Arguments to skip individual stages of the installation"
 )
+
+
+def configure_logging(verbose: bool) -> None:
+    _logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.addFilter(lambda record: record.levelno < logging.WARNING)
+    stdout_handler.setFormatter(logging.Formatter("%(message)s"))
+
+    stderr_handler = logging.StreamHandler()
+    stderr_handler.setLevel(logging.WARNING)
+    stderr_handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+
+    _logger.addHandler(stdout_handler)
+    _logger.addHandler(stderr_handler)
+
+
+@contextlib.contextmanager
+def indent_logger(indent: int = 2) -> Generator[None, Any, None]:
+    spaces = " " * indent
+    for handler in _logger.handlers:
+        if handler.formatter and handler.formatter._fmt:
+            handler.formatter._fmt = spaces + handler.formatter._fmt
+    try:
+        yield
+    finally:
+        for handler in _logger.handlers:
+            if handler.formatter and handler.formatter._fmt:
+                handler.formatter._fmt = handler.formatter._fmt[indent:]
 
 
 def input_with_default(_prompt: str, default: str | None) -> str:
@@ -64,7 +95,7 @@ def confirm(prompt_: str, default: Literal["y", "n"] | None = None) -> bool:
         return False
     else:
         if resp.upper():
-            print(f"Invalid input '{resp}'")
+            print(f"Invalid input: '{resp}'")
         return confirm(prompt_, default)
 
 
@@ -82,7 +113,7 @@ def prompt(
         return resp
 
     if validator is not None and not validator(resp):
-        print(f"Invalid value {resp}")
+        print(f"Invalid input: {resp}")
         return prompt(prompt_, default, confirm_value, validator)
 
     if confirm_value and not confirm(f"Use '{resp}'?", default="y"):
@@ -111,20 +142,21 @@ def stage(
                 return
 
             if predicate is not None and not predicate():
-                print(f"'{name}' is not required, skip")
+                _logger.info(f"'{name}' is not required, skip")
                 return
 
             if confirm_before_run and not confirm(f"{name}?", default="y"):
                 return
-            print(f"{name}...")
+            _logger.info(f"{name}...")
             try:
-                func(cfg)
+                with indent_logger():
+                    func(cfg)
             except Exception as exc:
                 error_msg = f"Error during '{name}': {exc}"
                 if abort_on_error:
                     parser.exit(status=1, message=error_msg)
                 else:
-                    print(error_msg)
+                    _logger.error(error_msg)
 
         return wrapper
 
@@ -151,13 +183,13 @@ class Config:
 def backup_if_file_exists(path: pathlib.Path, cfg: Config) -> None | pathlib.Path:
     """Backup a file if it exists. If it is only a symlink remove it"""
     if path.is_symlink():
-        print(f"Remove symlink of {path} to {path.resolve()}")
+        _logger.info(f"Remove symlink of {path} to {path.resolve()}")
         path.unlink()
         return
 
     if path.is_file():
         backup_path = path.parent / f"{path.name}.pre-dotfiles-installer-{cfg.timestamp}"
-        print(f"Rename existing {path.name} file to {backup_path}")
+        _logger.info(f"Rename existing {path.name} file to {backup_path}")
         path.rename(backup_path)
         return backup_path
 
@@ -186,7 +218,7 @@ def check_if_file_content_differs_from_text(
     :return: Whether the file differs
     """
     if not destination.is_file():
-        print(f"{destination} does not exist")
+        _logger.debug(f"{destination} does not exist")
         return False
     changed = destination.read_text() == text
     if changed and backup:
@@ -198,7 +230,7 @@ def safe_symlink(source: pathlib.Path, destination: pathlib.Path, cfg: Config) -
     if destination.is_dir():
         destination = destination / source.name
     backup_if_file_exists(destination, cfg)
-    print(f"Create symlink from {destination} to {source}")
+    _logger.info(f"Create symlink from {destination} to {source}")
     destination.symlink_to(source)
 
 
@@ -210,7 +242,7 @@ def configure_git(cfg: Config) -> None:
     new_gitconfig = gitconfig_template.safe_substitute(full_name=cfg.full_name, email=cfg.email)
     user_gitconfig = pathlib.Path.home() / ".gitconfig"
     check_if_file_content_differs_from_text(new_gitconfig, user_gitconfig, cfg, backup=True)
-    print("Writing .gitconfig")
+    _logger.info("Writing .gitconfig")
     user_gitconfig.write_text(new_gitconfig)
 
 
@@ -268,7 +300,7 @@ def install_vscode_extensions(cfg: Config) -> None:
     try:
         subprocess.run(["code", *args], check=True)
     except:
-        print(f"Error installing VSCode extensions")
+        _logger.error(f"Error installing VSCode extensions")
         raise
 
 
