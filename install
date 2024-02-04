@@ -220,11 +220,11 @@ def configure_pythonstartup(cfg: Config) -> None:
 
 
 def cmd_missing(cmd: str) -> bool:
-    return subprocess.run(["command", "-v", cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0
+    return subprocess.run(["which", cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0
 
 
 @stage("Install oh-my-zsh", confirm_before_run=True, predicate=functools.partial(cmd_missing, "omz"))
-def install_omz(cfg: Config):
+def install_omz(cfg: Config) -> None:
     subprocess.run(
         'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',
         check=True,
