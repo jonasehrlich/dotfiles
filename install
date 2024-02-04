@@ -315,7 +315,11 @@ def install_vscode_extensions(cfg: Config) -> None:
         raise
 
 
-@stage("Install .zshrc", confirm_before_run=True)
+def zshrc_is_not_symlinked_to_local_zshrc():
+    return (pathlib.Path.home() / ".zshrc").resolve() != (THIS_DIR / ".zshrc").resolve()
+
+
+@stage("Install .zshrc", confirm_before_run=True, predicate=zshrc_is_not_symlinked_to_local_zshrc)
 def install_zshrc(cfg: Config):
     safe_symlink(THIS_DIR / ".zshrc", pathlib.Path.home(), cfg)
 
