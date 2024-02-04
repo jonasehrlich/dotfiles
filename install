@@ -144,9 +144,9 @@ def stage(
             if predicate is not None and not predicate():
                 _logger.info(f"'{name}' is not required, skip")
                 return
-
             if confirm_before_run and not confirm(f"{name}?", default="y"):
                 return
+
             _logger.info(f"{name}...")
             try:
                 with indent_logger():
@@ -157,6 +157,8 @@ def stage(
                     parser.exit(status=1, message=error_msg)
                 else:
                     _logger.error(error_msg)
+            else:
+                _logger.info(f"{name} - done")
 
         return wrapper
 
