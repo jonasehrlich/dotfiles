@@ -261,6 +261,11 @@ def install_vscode_extensions(cfg: Config) -> None:
             raise
 
 
+@stage("Install .zshrc", confirm_before_run=True)
+def install_zshrc(cfg: Config):
+    safe_symlink(THIS_DIR / ".zshrc", pathlib.Path.home(), cfg)
+
+
 def main() -> NoReturn:
     namespace = parser.parse_args()
     try:
@@ -275,6 +280,7 @@ def main() -> NoReturn:
     install_fzf(cfg)
     install_pyenv(cfg)
     install_vscode_extensions(cfg)
+    install_zshrc(cfg)
 
     sys.exit(0)
 
