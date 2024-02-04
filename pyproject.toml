@@ -1,3 +1,27 @@
+[tool.poetry]
+name = "dotfiles"
+version = "0.1.0"
+description = "Dotfiles, templates and an installer"
+authors = ["Jonas Ehrlich <jonas.ehrlich@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+homepage = "https://github.com/jonasehrlich/dotfiles"
+repository = "https://github.com/jonasehrlich/dotfiles"
+documentation = "https://github.com/jonasehrlich/dotfiles"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.1.1"
+ruff = "^0.2.0"
+mypy = "^1.8.0"
+isort = "^5.13.2"
+
 [tool.black]
 line-length = 120
 
@@ -11,6 +35,8 @@ strict = true
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle error rules
     "F",   # pycodestyle warning rules
@@ -24,11 +50,8 @@ select = [
     "C90", # mccabe complexity rules
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # Disable assert-statement and magic-value-comparison rules for tests
 "test_*.py" = ["S101", "PLR2004"]
 # Disable unused-import rule for __init__.py files
 "__init__*.py" = ["F401"]
-
-[tool.ruff.pylint]
-max-args = 8
