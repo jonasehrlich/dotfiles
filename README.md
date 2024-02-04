@@ -18,4 +18,3 @@ The install script will do the following steps:
 8. If requested, add the default included [`.zshrc`](.zshrc)
 
 This installation process tries to achieve that the repository is always the single source of truth.
-

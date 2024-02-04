@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import collections.abc
+import contextlib
 import dataclasses
 import datetime
 import functools
@@ -13,15 +14,13 @@ import platform
 import pwd
 import string
 import subprocess
-import contextlib
 import sys
-from typing import TYPE_CHECKING, Any, Literal, Generator
+from typing import TYPE_CHECKING, Any, Generator, Literal, cast
 
 if sys.version_info > (3, 11):
     from typing import NoReturn, Self
-else:
-    if TYPE_CHECKING:
-        from typing_extensions import NoReturn, Self
+elif TYPE_CHECKING:
+    from typing_extensions import NoReturn, Self
 
 _logger = logging.getLogger("install")
 
@@ -165,12 +164,17 @@ def stage(
     return dec
 
 
+Platforms = Literal["Linux", "Darwin", "Java", "Windows"]
+
+
 @dataclasses.dataclass
 class Config:
     username: str
     full_name: str
     email: str
-    platform: Literal["Linux", "Darwin", "Java", "Windows"] = dataclasses.field(default_factory=platform.system)
+    platform: Platforms = dataclasses.field(
+        default_factory=cast(collections.abc.Callable[[], Platforms], platform.system)
+    )
     skipped_stages: list[str] = dataclasses.field(default_factory=list)
     timestamp: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
 
@@ -192,24 +196,40 @@ class DotfileManager:
         self._cleanup_symlink(path)
 
     def _backup_file(self, path: pathlib.Path) -> pathlib.Path | None:
+        """Backup an existing file in `path`
+
+        :param path: Path to back-up
+        :return: Back-up path if backed-up, else None
+        """
         if path.is_file():
             backup_path = path.parent / f"{path.name}{self._backup_suffix}"
             _logger.info(f"Rename existing {path.name} file to {backup_path}")
             path.rename(backup_path)
             return backup_path
+        return None
 
     def _cleanup_symlink(self, path: pathlib.Path) -> None:
+        """Remove a symlink in `path` if it exists
+
+        :param path: Path to remove the symlink from
+        """
         if path.is_symlink():
             _logger.info("Remove symlink of %s to %s", path, path.resolve())
             path.unlink()
 
-    def _file_content_matches(self, text: str, destination: pathlib.Path) -> bool:
-        if destination.is_file() and destination.read_text() == text:
+    def _file_content_matches(self, text: str, path: pathlib.Path) -> bool:
+        """Check if the content of a file matches a string
+
+        :param text: Text to check the file content against
+        :param path: Path to check
+        :return: Whether the content of `path` matches `text`
+        """
+        if path.is_file() and path.read_text() == text:
             return True
         return False
-    
+
     def safe_symlink(self, source: pathlib.Path, destination: pathlib.Path) -> None:
-        """Create a symlink. If `destination` is an existing file, back it up. 
+        """Create a symlink. If `destination` is an existing file, back it up.
         If `destination` is a symlink, remove it first.
 
         :param source: Source file
@@ -247,9 +267,7 @@ def not_(func: collections.abc.Callable[[], bool]) -> bool:
     return not func()
 
 
-@stage(
-    "Create .gitconfig",
-)
+@stage("Create .gitconfig")
 def create_gitconfig(cfg: Config) -> None:
     gitconfig_content = string.Template((THIS_DIR / ".gitconfig.template").read_text()).safe_substitute(
         full_name=cfg.full_name, email=cfg.email
@@ -275,9 +293,7 @@ def link_tmux_conf(cfg: Config) -> None:
 
 @stage(
     "Link .pythonstartup",
-    predicate=functools.partial(
-        no_symlink_exists, pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"
-    ),
+    predicate=functools.partial(no_symlink_exists, pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"),
 )
 def link_pythonstartup(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".pythonstartup", pathlib.Path.home())
