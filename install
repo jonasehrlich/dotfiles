@@ -123,7 +123,7 @@ def prompt(
 
 def stage(
     name: str,
-    confirm_before_run: bool,
+    confirm_before_run: bool = False,
     predicate: collections.abc.Callable[[], bool] | None = None,
     abort_on_error: bool = False,
 ) -> collections.abc.Callable[..., collections.abc.Callable[[Config], None]]:
@@ -239,8 +239,8 @@ class DotfileManager:
         destination.write_text(text)
 
 
-def file_is_symlinked(symlink: pathlib.Path, path: pathlib.Path) -> bool:
-    return symlink.is_symlink() and symlink.resolve() == path.resolve()
+def no_symlink_exists(symlink: pathlib.Path, path: pathlib.Path) -> bool:
+    return symlink.resolve() != path.resolve()
 
 
 def not_(func: collections.abc.Callable[[], bool]) -> bool:
@@ -248,10 +248,9 @@ def not_(func: collections.abc.Callable[[], bool]) -> bool:
 
 
 @stage(
-    "Configure .gitconfig",
-    confirm_before_run=False,
+    "Create .gitconfig",
 )
-def configure_gitconfig(cfg: Config) -> None:
+def create_gitconfig(cfg: Config) -> None:
     gitconfig_content = string.Template((THIS_DIR / ".gitconfig.template").read_text()).safe_substitute(
         full_name=cfg.full_name, email=cfg.email
     )
@@ -259,31 +258,28 @@ def configure_gitconfig(cfg: Config) -> None:
 
 
 @stage(
-    "Configure .gitignore",
-    confirm_before_run=False,
-    predicate=functools.partial(file_is_symlinked, pathlib.Path.home() / ".gitignore", THIS_DIR / ".gitignore"),
+    "Link .gitignore",
+    predicate=functools.partial(no_symlink_exists, pathlib.Path.home() / ".gitignore", THIS_DIR / ".gitignore"),
 )
-def configure_gitignore(cfg: Config) -> None:
+def link_gitignore(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".gitignore", pathlib.Path.home())
 
 
 @stage(
-    "Configure tmux.conf",
-    confirm_before_run=False,
-    predicate=functools.partial(file_is_symlinked, pathlib.Path.home() / ".tmux.conf", THIS_DIR / ".tmux.conf"),
+    "Link .tmux.conf",
+    predicate=functools.partial(no_symlink_exists, pathlib.Path.home() / ".tmux.conf", THIS_DIR / ".tmux.conf"),
 )
-def configure_tmux(cfg: Config) -> None:
+def link_tmux_conf(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".tmux.conf", pathlib.Path.home())
 
 
 @stage(
-    "Configure .pythonstartup",
-    confirm_before_run=False,
+    "Link .pythonstartup",
     predicate=functools.partial(
-        file_is_symlinked, pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"
+        no_symlink_exists, pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"
     ),
 )
-def configure_pythonstartup(cfg: Config) -> None:
+def link_pythonstartup(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".pythonstartup", pathlib.Path.home())
 
 
@@ -341,11 +337,10 @@ def install_vscode_extensions(cfg: Config) -> None:
 
 
 @stage(
-    "Install .zshrc",
-    confirm_before_run=True,
-    predicate=functools.partial(file_is_symlinked, pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
+    "Create .zshrc",
+    predicate=functools.partial(no_symlink_exists, pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
 )
-def install_zshrc(cfg: Config) -> None:
+def link_zshrc(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".zshrc", pathlib.Path.home())
 
 
@@ -359,15 +354,15 @@ def main() -> NoReturn:
         parser.exit(status=1, message=f"Error creating configuration: {exc}")
 
     try:
-        configure_gitconfig(cfg)
-        configure_gitignore(cfg)
-        configure_tmux(cfg)
-        configure_pythonstartup(cfg)
+        create_gitconfig(cfg)
+        link_gitignore(cfg)
+        link_tmux_conf(cfg)
+        link_pythonstartup(cfg)
         install_omz(cfg)
         install_fzf(cfg)
         install_pyenv(cfg)
         install_vscode_extensions(cfg)
-        install_zshrc(cfg)
+        link_zshrc(cfg)
     except KeyboardInterrupt:
         parser.exit(status=2, message="\nAborted!\n")
 
