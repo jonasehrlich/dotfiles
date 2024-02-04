@@ -142,12 +142,12 @@ def stage(
                 return
 
             if predicate is not None and not predicate():
-                _logger.info(f"'{name}' is not required, skip")
+                _logger.info(f"{name} is not required, skip")
                 return
             if confirm_before_run and not confirm(f"{name}?", default="y"):
                 return
 
-            _logger.info(f"{name}...")
+            _logger.info(f"{name} ...")
             try:
                 with indent_logger():
                     func(cfg)
@@ -193,7 +193,7 @@ class DotfileManager:
 
     def _backup_file(self, path: pathlib.Path) -> pathlib.Path | None:
         if path.is_file():
-            backup_path = path.parent / f"{path.name}.{self._backup_suffix}"
+            backup_path = path.parent / f"{path.name}{self._backup_suffix}"
             _logger.info(f"Rename existing {path.name} file to {backup_path}")
             path.rename(backup_path)
             return backup_path
