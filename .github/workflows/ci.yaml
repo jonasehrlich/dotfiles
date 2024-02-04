@@ -38,7 +38,8 @@ jobs:
       - name: Import order check
         run: |
           poetry run isort install
-  test:
+
+  test-linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -49,10 +50,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install zsh
-        # if: ${{ matrix.os == "ubuntu" }}
         run: |
           sudo apt update
           sudo apt install zsh
+      - name: Install dotfiles
+        run: |
+          ./install --email foo@acme.org --confirm-all-stages \
+            --no-install-vscode-extensions
+  test-macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Install dotfiles
         run: |
           ./install --email foo@acme.org --confirm-all-stages \
