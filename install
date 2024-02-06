@@ -398,6 +398,8 @@ def install_vscode_extensions(cfg: Config) -> None:
 )
 def link_zshrc(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".zshrc", pathlib.Path.home())
+    if cfg.platform == "Darwin":
+        DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".zshrc.macos", pathlib.Path.home())
 
 
 def main() -> NoReturn:
