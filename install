@@ -192,9 +192,10 @@ class Config:
     @classmethod
     def from_env(cls, email: str, skipped_stages: list[str] | None, confirm_all_stages: bool, **kwargs: Any) -> Self:
         username = getpass.getuser()
+        full_name = pwd.getpwnam(username).pw_gecos.split(",", 1)[0]
         return cls(
             username=username,
-            full_name=pwd.getpwnam(username).pw_name,
+            full_name=full_name,
             email=email,
             confirm_all_stages=confirm_all_stages,
             skipped_stages=skipped_stages or [],
