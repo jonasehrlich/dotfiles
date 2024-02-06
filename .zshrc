@@ -100,9 +100,9 @@ function source_file() {
     [ -f $1 ] && source $1
 }
 
-source_file ~/.fzf.zsh
-source_file ~/.aliases.zsh
-source_file ~/.local-env.zsh
+source_file "$HOME/.fzf.zsh"
+source_file "$HOME/.aliases.zsh"
+source_file "$HOME/.local-env.zsh"
 
 # Configure environment variables as arrays
 typeset -T LD_LIBRARY_PATH ld_library_path :
@@ -111,7 +111,7 @@ typeset -T CPATH cpath :
 typeset -T C_INCLUDE_PATH c_include_path :
 
 if [[ $(uname) == "Darwin" ]]; then
-  source .zshrc.macos.zsh
+  source_file "$HOME/.zshrc.macos.zsh"
 fi
 
 # Enable pyenv if it exists
