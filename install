@@ -6,7 +6,6 @@ import collections.abc
 import contextlib
 import dataclasses
 import datetime
-import functools
 import getpass
 import logging
 import pathlib
@@ -15,6 +14,7 @@ import pwd
 import re
 import string
 import subprocess
+import shutil
 import sys
 from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, cast
 
@@ -275,12 +275,8 @@ class DotfileManager:
         destination.write_text(text)
 
 
-def no_symlink_exists(symlink: pathlib.Path, path: pathlib.Path) -> bool:
-    return symlink.resolve() != path.resolve()
-
-
-def not_(func: collections.abc.Callable[[], bool]) -> bool:
-    return not func()
+def symlink_exists(symlink: pathlib.Path, path: pathlib.Path) -> bool:
+    return symlink.resolve() == path.resolve()
 
 
 @stage("Create .gitconfig")
@@ -293,7 +289,7 @@ def create_gitconfig(cfg: Config) -> None:
 
 @stage(
     "Link .gitignore",
-    predicate=functools.partial(no_symlink_exists, pathlib.Path.home() / ".gitignore", THIS_DIR / ".gitignore"),
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".gitignore", THIS_DIR / ".gitignore"),
 )
 def link_gitignore(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".gitignore", pathlib.Path.home())
@@ -301,7 +297,7 @@ def link_gitignore(cfg: Config) -> None:
 
 @stage(
     "Link .tmux.conf",
-    predicate=functools.partial(no_symlink_exists, pathlib.Path.home() / ".tmux.conf", THIS_DIR / ".tmux.conf"),
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".tmux.conf", THIS_DIR / ".tmux.conf"),
 )
 def link_tmux_conf(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".tmux.conf", pathlib.Path.home())
@@ -309,7 +305,7 @@ def link_tmux_conf(cfg: Config) -> None:
 
 @stage(
     "Link .pythonstartup",
-    predicate=functools.partial(no_symlink_exists, pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"),
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"),
 )
 def link_pythonstartup(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".pythonstartup", pathlib.Path.home())
@@ -318,7 +314,7 @@ def link_pythonstartup(cfg: Config) -> None:
 @stage(
     "Install oh-my-zsh",
     interactive_confirm=True,
-    predicate=functools.partial(not_, (pathlib.Path.home() / ".oh-my-zsh").exists),
+    predicate=lambda: not (pathlib.Path.home() / ".oh-my-zsh").exists(),
     abort_on_error=False,
 )
 def install_omz(cfg: Config) -> None:
@@ -333,14 +329,16 @@ def install_omz(cfg: Config) -> None:
 @stage(
     "Install pyenv",
     interactive_confirm=True,
-    predicate=functools.partial(not_, (pathlib.Path.home() / ".pyenv").exists),
+    predicate=lambda: not (pathlib.Path.home() / ".pyenv").exists(),
 )
 def install_pyenv(cfg: Config) -> None:
     subprocess.run("curl https://pyenv.run | bash", shell=True, check=True)  # noqa: S602, S607
 
 
 @stage(
-    "Install fzf", interactive_confirm=True, predicate=functools.partial(not_, (pathlib.Path.home() / ".fzf").exists)
+    "Install fzf",
+    interactive_confirm=True,
+    predicate=lambda: not shutil.which("fzf") and not (pathlib.Path.home() / ".fzf").exists(),
 )
 def install_fzf(cfg: Config) -> None:
     fzf_dir = pathlib.Path.home() / ".fzf"
@@ -396,7 +394,7 @@ def install_vscode_extensions(cfg: Config) -> None:
 
 @stage(
     "Create .zshrc",
-    predicate=functools.partial(no_symlink_exists, pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
 )
 def link_zshrc(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / ".zshrc", pathlib.Path.home())
