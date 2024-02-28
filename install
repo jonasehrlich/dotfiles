@@ -12,9 +12,9 @@ import pathlib
 import platform
 import pwd
 import re
+import shutil
 import string
 import subprocess
-import shutil
 import sys
 from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, cast
 
@@ -319,7 +319,7 @@ def link_pythonstartup(cfg: Config) -> None:
 )
 def install_omz(cfg: Config) -> None:
     subprocess.run(
-        'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',  # noqa: S607
+        '/usr/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',  # noqa: S607
         stdin=subprocess.DEVNULL,
         check=True,
         shell=True,  # noqa: S602
@@ -354,6 +354,35 @@ def install_fzf(cfg: Config) -> None:
         check=True,
     )
     subprocess.run([str(fzf_dir / "install")], check=True)  # noqa: S603
+
+
+@stage("Install nvm", interactive_confirm=True, predicate=lambda: not (pathlib.Path.home() / ".nvm").exists())
+def install_nvm(cfg: Config) -> None:
+    proc = subprocess.run(
+        [  # noqa: S603
+            "/usr/bin/curl",
+            "-L",
+            "-s",
+            "-o",
+            "/dev/null",
+            "-w",
+            "%{url_effective}",
+            "https://github.com/nvm-sh/nvm/releases/latest",
+        ],
+        check=True,
+        stdout=subprocess.PIPE,
+        encoding="UTF-8",
+    )
+
+    m = re.match(r"https://github\.com/nvm-sh/nvm/releases/tag/(?P<tag>v\d+\.\d+(?:\.\d+))", proc.stdout)
+    if not m:
+        raise RuntimeError(f"Redirected URL {proc.stdout} does not match the expected pattern")
+
+    subprocess.run(
+        f"curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{m.group('tag')}/install.sh | bash",
+        shell=True,  # noqa: S602
+        check=True,
+    )
 
 
 def validate_vscode_extension_names(extensions: collections.abc.Iterable[str]) -> None:
@@ -423,6 +452,7 @@ def main() -> NoReturn:
         install_pyenv(cfg)
         install_vscode_extensions(cfg)
         link_zshrc(cfg)
+        install_nvm(cfg)
     except KeyboardInterrupt:
         parser.exit(status=2, message="\nAborted!\n")
 
