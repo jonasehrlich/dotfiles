@@ -23,6 +23,8 @@ if sys.version_info > (3, 11):
 elif TYPE_CHECKING:
     from typing_extensions import NoReturn, Self
 
+XDG_CONFIG_HOME = pathlib.Path.home() / ".config"
+
 Platforms = Literal["Linux", "Darwin", "Java", "Windows"]
 _logger = logging.getLogger("install")
 THIS_DIR = pathlib.Path(__file__).parent
@@ -385,6 +387,15 @@ def install_nvm(cfg: Config) -> None:
     )
 
 
+@stage(
+    "Install NeoVim config",
+    interactive_confirm=True,
+    predicate=lambda: not symlink_exists(XDG_CONFIG_HOME / "nvim", THIS_DIR / "nvim"),
+)
+def install_nvim_config(cfg: Config) -> None:
+    DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / "nvim", XDG_CONFIG_HOME)
+
+
 def validate_vscode_extension_names(extensions: collections.abc.Iterable[str]) -> None:
     """Validate that VSCode extension names contain two elements, publisher and extension, separated by a dot.
     Each element must only contain characters, numbers, dashes and underscores.
@@ -453,6 +464,7 @@ def main() -> NoReturn:
         install_vscode_extensions(cfg)
         link_zshrc(cfg)
         install_nvm(cfg)
+        install_nvim_config(cfg)
     except KeyboardInterrupt:
         parser.exit(status=2, message="\nAborted!\n")
 
