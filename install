@@ -388,11 +388,11 @@ def install_nvm(cfg: Config) -> None:
 
 
 @stage(
-    "Install NeoVim config",
+    "Link nvim config",
     interactive_confirm=True,
     predicate=lambda: not symlink_exists(XDG_CONFIG_HOME / "nvim", THIS_DIR / "nvim"),
 )
-def install_nvim_config(cfg: Config) -> None:
+def link_nvim_config(cfg: Config) -> None:
     DotfileManager(cfg.timestamp).safe_symlink(THIS_DIR / "nvim", XDG_CONFIG_HOME)
 
 
@@ -464,7 +464,7 @@ def main() -> NoReturn:
         install_vscode_extensions(cfg)
         link_zshrc(cfg)
         install_nvm(cfg)
-        install_nvim_config(cfg)
+        link_nvim_config(cfg)
     except KeyboardInterrupt:
         parser.exit(status=2, message="\nAborted!\n")
 
