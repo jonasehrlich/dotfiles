@@ -198,7 +198,7 @@ def stage(
 class Config:
     username: str
     full_name: str
-    email: str
+    email: str | None
     confirm_all_stages: bool
     platform: Platforms = dataclasses.field(default_factory=cast(Callable[[], Platforms], platform.system))
     skipped_stages: list[str] = dataclasses.field(default_factory=list)
@@ -208,7 +208,7 @@ class Config:
     @classmethod
     def from_env(
         cls,
-        email: str,
+        email: str | None,
         skipped_stages: list[str] | None,
         only_stages: list[str] | None,
         confirm_all_stages: bool,
@@ -308,6 +308,9 @@ def symlink_exists(symlink: pathlib.Path, path: pathlib.Path) -> bool:
 
 @stage("Create .gitconfig")
 def create_gitconfig(cfg: Config) -> None:
+    if cfg.email is None:
+        cfg.email = prompt("Enter E-Mail address:")
+
     gitconfig_content = string.Template((THIS_DIR / ".gitconfig.template").read_text()).safe_substitute(
         full_name=cfg.full_name, email=cfg.email
     )
@@ -469,12 +472,6 @@ def link_zshrc(cfg: Config) -> None:
 
 def main() -> NoReturn:
     namespace = parser.parse_args()
-    if not namespace.email:
-        try:
-            namespace.email = prompt("Enter E-Mail address:")
-        except KeyboardInterrupt:
-            parser.exit(status=2, message="\nAborted!\n")
-
     configure_logging(namespace.verbose)
 
     try:
