@@ -433,7 +433,7 @@ def install_vscode_extensions(cfg: Config) -> None:
 
 
 @stage(
-    "Create .zshrc",
+    "Link .zshrc",
     predicate=lambda: not symlink_exists(pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
 )
 def link_zshrc(cfg: Config) -> None:
