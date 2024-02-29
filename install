@@ -45,6 +45,10 @@ skip_stages_group = parser.add_argument_group(
     "Skip stages", description="Arguments to skip individual stages of the installation"
 )
 
+only_stages_group = parser.add_argument_group(
+    "Only run stages", description="Arguments to only run individual stages of the installation"
+)
+
 
 def configure_logging(verbose: bool) -> None:
     _logger.setLevel(logging.DEBUG if verbose else logging.INFO)
@@ -152,9 +156,18 @@ def stage(
             const=flag_name,
             help=f"Skip the stage '{name}'",
         )
+        only_stages_group.add_argument(
+            f"--only-{flag_name}",
+            action="append_const",
+            dest="only_stages",
+            const=flag_name,
+            help=f"Only run the stage '{name}'",
+        )
 
         def wrapper(cfg: Config) -> None:
             if flag_name in cfg.skipped_stages:
+                return
+            if cfg.only_stages and flag_name not in cfg.only_stages:
                 return
 
             if predicate is not None and not predicate():
@@ -189,10 +202,21 @@ class Config:
     confirm_all_stages: bool
     platform: Platforms = dataclasses.field(default_factory=cast(Callable[[], Platforms], platform.system))
     skipped_stages: list[str] = dataclasses.field(default_factory=list)
+    only_stages: list[str] = dataclasses.field(default_factory=list)
     timestamp: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
 
     @classmethod
-    def from_env(cls, email: str, skipped_stages: list[str] | None, confirm_all_stages: bool, **kwargs: Any) -> Self:
+    def from_env(
+        cls,
+        email: str,
+        skipped_stages: list[str] | None,
+        only_stages: list[str] | None,
+        confirm_all_stages: bool,
+        **kwargs: Any,
+    ) -> Self:
+        if skipped_stages and only_stages:
+            raise ValueError("Cannot set skip and only flags in parallel")
+
         username = getpass.getuser()
         full_name = pwd.getpwnam(username).pw_gecos.split(",", 1)[0]
         return cls(
@@ -201,6 +225,7 @@ class Config:
             email=email,
             confirm_all_stages=confirm_all_stages,
             skipped_stages=skipped_stages or [],
+            only_stages=only_stages or [],
         )
 
 
@@ -445,7 +470,11 @@ def link_zshrc(cfg: Config) -> None:
 def main() -> NoReturn:
     namespace = parser.parse_args()
     if not namespace.email:
-        namespace.email = prompt("Enter E-Mail address:")
+        try:
+            namespace.email = prompt("Enter E-Mail address:")
+        except KeyboardInterrupt:
+            parser.exit(status=2, message="\nAborted!\n")
+
     configure_logging(namespace.verbose)
 
     try:
