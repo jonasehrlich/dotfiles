@@ -242,8 +242,15 @@ def validate_vscode_extension_names(extensions: collections.abc.Iterable[str]) -
 
 @stage("Install VSCode extensions", interactive_confirm=True, abort_on_error=False)
 def install_vscode_extensions(cfg: Config) -> None:
+    code_cmd = shutil.which("code")
+    if not code_cmd:
+        _logger.error("Executable 'code' is not visible in $PATH")
+        return
     proc = subprocess.run(
-        ["code", "--list-extensions"], stdout=subprocess.PIPE, encoding="UTF-8", check=True  # noqa: S603, S607
+        [code_cmd, "--list-extensions"],  # noqa: S603
+        stdout=subprocess.PIPE,
+        encoding="UTF-8",
+        check=True,
     )
     available_extensions = set(proc.stdout.splitlines())
     validate_vscode_extension_names(available_extensions)
@@ -261,7 +268,7 @@ def install_vscode_extensions(cfg: Config) -> None:
         args.append("--install-extension")
         args.append(extension)
     try:
-        subprocess.run(["code", *args], check=True)  # noqa: S603, S607
+        subprocess.run([code_cmd, *args], check=True)  # noqa: S603
     except:
         _logger.error("Error installing VSCode extensions")
         raise
