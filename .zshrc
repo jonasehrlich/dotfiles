@@ -111,7 +111,7 @@ typeset -T CPATH cpath :
 typeset -T C_INCLUDE_PATH c_include_path :
 
 if [[ $(uname) == "Darwin" ]]; then
-  source_file "$HOME/.zshrc.macos.zsh"
+  source_file "$HOME/.zshrc.macos"
 fi
 
 RYE_HOME="$HOME/.rye"
