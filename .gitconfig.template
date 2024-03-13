@@ -7,7 +7,7 @@
 	co = checkout
 	last = log -1 HEAD
 	sync = pull --rebase
-	tree = "log --all --graph --decorate --abbrev-commit --pretty=format:'%C(auto)%h %d %s %C(normal dim)• %an, %ar'"
+	tree = "log --graph --decorate --abbrev-commit --pretty=format:'%C(auto)%h %d %s %C(normal dim)• %an, %ar'"
 	undo-amend = reset --soft HEAD@{1}
 	unstage = reset HEAD --
 [help]
