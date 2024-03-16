@@ -114,6 +114,11 @@ if [[ $(uname) == "Darwin" ]]; then
   source_file "$HOME/.zshrc.macos.zsh"
 fi
 
+RYE_HOME="$HOME/.rye"
+if [ -d "$RYE_HOME" ]; then
+  source "$HOME/.rye/env"
+fi
+
 # Enable pyenv if it exists
 export PYENV_ROOT="$HOME/.pyenv"
 if [ -d $PYENV_ROOT ]; then
