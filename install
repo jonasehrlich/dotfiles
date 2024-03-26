@@ -225,12 +225,12 @@ def install_nvm(cfg: Config) -> None:
 
 
 @stage(
-    "Link nvim config",
+    "Link neovim config",
     interactive_confirm=True,
-    predicate=lambda: not symlink_exists(XDG_CONFIG_HOME / "nvim", THIS_DIR / "neovim"),
+    predicate=lambda: not symlink_exists(XDG_CONFIG_HOME / "nvim", THIS_DIR / "nvim"),
 )
 def link_nvim_config(cfg: Config) -> None:
-    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "neovim", XDG_CONFIG_HOME)
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "nvim", XDG_CONFIG_HOME)
 
 
 def validate_vscode_extension_names(extensions: collections.abc.Iterable[str]) -> None:
