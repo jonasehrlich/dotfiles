@@ -1,19 +1,19 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 function source_file() {
     [ -f $1 ] && source $1
 }
-
-source_file "$HOME/.fzf.zsh"
-source_file "$HOME/.aliases.zsh"
-source_file "$HOME/.local-env.zsh"
 
 # Configure environment variables as arrays
 typeset -T LD_LIBRARY_PATH ld_library_path :
 typeset -T LIBRARY_PATH library_path :
 typeset -T CPATH cpath :
 typeset -T C_INCLUDE_PATH c_include_path :
+
+path=("$HOME/.local/bin" $path)
+
+source_file "$HOME/.fzf.zsh"
+source_file "$HOME/.aliases.zsh"
+source_file "$HOME/.local-env.zsh"
 
 if [[ $(uname) == "Darwin" ]]; then
   source_file "$HOME/.zshrc.macos.zsh"
@@ -82,8 +82,6 @@ ENABLE_CORRECTION="true"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git poetry pyenv)
-
-path=("$HOME/.local/bin" $path)
 
 source $ZSH/oh-my-zsh.sh
 
