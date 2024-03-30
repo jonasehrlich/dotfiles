@@ -16,7 +16,7 @@ source_file "$HOME/.aliases.zsh"
 source_file "$HOME/.local-env.zsh"
 
 if [[ $(uname) == "Darwin" ]]; then
-  source_file "$HOME/.zshrc.macos.zsh"
+  source_file "$HOME/.zshrc.macos"
 fi
 
 source_file "$HOME/.rye/env"
