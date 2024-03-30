@@ -1,0 +1,7 @@
+# Ignore macOS Finder custom attribute files
+.DS_Store
+# Ignore IDEA / VSCode configuration directories
+.idea/
+.vscode/
+# Ignore all virtual environments
+.venv*

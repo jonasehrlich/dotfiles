@@ -28,7 +28,7 @@ line-length = 120
 [tool.isort]
 profile = "black"
 line_length = 120
-src_paths = ["plantuml_sequence", "test"]
+src_paths = ["."]
 
 [tool.mypy]
 strict = true

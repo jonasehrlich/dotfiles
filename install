@@ -118,7 +118,7 @@ def create_gitconfig(cfg: Config) -> None:
     if cfg.email is None:
         cfg.email = prompt("Enter E-Mail address:")
 
-    gitconfig_content = string.Template((THIS_DIR / ".gitconfig.template").read_text()).safe_substitute(
+    gitconfig_content = string.Template((THIS_DIR / "git" / "config.template").read_text()).safe_substitute(
         full_name=cfg.full_name, email=cfg.email
     )
     DotfileManager(cfg.timestamp, _logger).safe_write(gitconfig_content, pathlib.Path.home() / ".gitconfig")
@@ -126,26 +126,26 @@ def create_gitconfig(cfg: Config) -> None:
 
 @stage(
     "Link .gitignore",
-    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".gitignore", THIS_DIR / ".gitignore"),
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".gitignore", THIS_DIR / "git" / "ignore"),
 )
 def link_gitignore(cfg: Config) -> None:
-    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / ".gitignore", pathlib.Path.home())
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "git" / "ignore", pathlib.Path.home())
 
 
 @stage(
     "Link .tmux.conf",
-    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".tmux.conf", THIS_DIR / ".tmux.conf"),
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".tmux.conf", THIS_DIR / "tmux" / "tmux.conf"),
 )
 def link_tmux_conf(cfg: Config) -> None:
-    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / ".tmux.conf", pathlib.Path.home())
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "tmux" / "tmux.conf", pathlib.Path.home())
 
 
 @stage(
     "Link .pythonstartup",
-    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".pythonstartup", THIS_DIR / ".pythonstartup"),
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".pythonstartup", THIS_DIR / "python" / "startup"),
 )
 def link_pythonstartup(cfg: Config) -> None:
-    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / ".pythonstartup", pathlib.Path.home())
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "python" / "startup", pathlib.Path.home())
 
 
 @stage(
@@ -223,7 +223,7 @@ def install_nvm(cfg: Config) -> None:
 
 
 @stage(
-    "Link nvim config",
+    "Link neovim config",
     interactive_confirm=True,
     predicate=lambda: not symlink_exists(XDG_CONFIG_HOME / "nvim", THIS_DIR / "nvim"),
 )
@@ -255,7 +255,7 @@ def install_vscode_extensions(cfg: Config) -> None:
     available_extensions = set(proc.stdout.splitlines())
     validate_vscode_extension_names(available_extensions)
 
-    required_extensions = set((THIS_DIR / "vscode-extensions.txt").read_text().splitlines())
+    required_extensions = set((THIS_DIR / "vscode" / "vscode-extensions.txt").read_text().splitlines())
     validate_vscode_extension_names(required_extensions)
     extensions_to_install = required_extensions - available_extensions
 
@@ -276,12 +276,12 @@ def install_vscode_extensions(cfg: Config) -> None:
 
 @stage(
     "Link .zshrc",
-    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".zshrc", THIS_DIR / ".zshrc"),
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".zshrc", THIS_DIR / "zsh" / ".zshrc"),
 )
 def link_zshrc(cfg: Config) -> None:
-    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / ".zshrc", pathlib.Path.home())
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "zsh" / ".zshrc", pathlib.Path.home())
     if cfg.platform == "Darwin":
-        DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / ".zshrc.macos", pathlib.Path.home())
+        DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "zsh" / ".zshrc.macos", pathlib.Path.home())
 
 
 def main() -> NoReturn:

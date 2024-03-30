@@ -5,7 +5,7 @@ repos:
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
-        exclude: "nvim/lazy-lock.json|nvim/lazyvim.json"
+        exclude: "neovim/lazy-lock.json|neovim/lazyvim.json"
       - id: trailing-whitespace
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: "24.1.1"
