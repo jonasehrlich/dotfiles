@@ -129,7 +129,7 @@ def create_gitconfig(cfg: Config) -> None:
     predicate=lambda: not symlink_exists(pathlib.Path.home() / ".gitignore", THIS_DIR / "git" / "ignore"),
 )
 def link_gitignore(cfg: Config) -> None:
-    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "git" / "ignore", pathlib.Path.home())
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "git" / "ignore", pathlib.Path.home() / ".gitignore")
 
 
 @stage(
@@ -137,7 +137,9 @@ def link_gitignore(cfg: Config) -> None:
     predicate=lambda: not symlink_exists(pathlib.Path.home() / ".tmux.conf", THIS_DIR / "tmux" / "tmux.conf"),
 )
 def link_tmux_conf(cfg: Config) -> None:
-    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "tmux" / "tmux.conf", pathlib.Path.home())
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(
+        THIS_DIR / "tmux" / "tmux.conf", pathlib.Path.home() / ".tmux.conf"
+    )
 
 
 @stage(
@@ -145,7 +147,9 @@ def link_tmux_conf(cfg: Config) -> None:
     predicate=lambda: not symlink_exists(pathlib.Path.home() / ".pythonstartup", THIS_DIR / "python" / "startup"),
 )
 def link_pythonstartup(cfg: Config) -> None:
-    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "python" / "startup", pathlib.Path.home())
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(
+        THIS_DIR / "python" / "startup", pathlib.Path.home() / ".pythonstartup"
+    )
 
 
 @stage(
