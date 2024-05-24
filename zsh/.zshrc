@@ -10,8 +10,6 @@ typeset -T LIBRARY_PATH library_path :
 typeset -T CPATH cpath :
 typeset -T C_INCLUDE_PATH c_include_path :
 
-path=("$HOME/.local/bin" $path)
-
 source_file "$HOME/.aliases.zsh"
 source_file "$HOME/.local-env.zsh"
 
@@ -21,7 +19,7 @@ fi
 
 # Enable pyenv if it exists
 export PYENV_ROOT="$HOME/.pyenv"
-if [[ -d $PYENV_ROOT && $(command -v pyenv >/dev/null) ]]; then
+if [[ -d $PYENV_ROOT ]]; then
   export PATH="$PYENV_ROOT/bin:$PATH"
   eval "$(pyenv init -)"
 fi
