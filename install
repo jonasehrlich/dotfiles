@@ -119,7 +119,7 @@ def create_gitconfig(cfg: Config) -> None:
         cfg.email = prompt("Enter E-Mail address:")
 
     gitconfig_content = string.Template((THIS_DIR / "git" / "config.template").read_text()).safe_substitute(
-        full_name=cfg.full_name, email=cfg.email
+        full_name=cfg.full_name, email=cfg.email, signingkey=str(pathlib.Path.home() / ".ssh" / "id_ed25519.pub")
     )
     DotfileManager(cfg.timestamp, _logger).safe_write(gitconfig_content, pathlib.Path.home() / ".gitconfig")
 
