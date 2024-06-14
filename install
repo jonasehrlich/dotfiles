@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import collections.abc
+import difflib
 import logging
 import pathlib
 import re
@@ -115,13 +116,30 @@ def symlink_exists(symlink: pathlib.Path, path: pathlib.Path) -> bool:
 
 @stage("Create .gitconfig")
 def create_gitconfig(cfg: Config) -> None:
+    gitconfig_path = pathlib.Path.home() / ".gitconfig"
+
     if cfg.email is None:
         cfg.email = prompt("Enter E-Mail address:")
 
-    gitconfig_content = string.Template((THIS_DIR / "git" / "config.template").read_text()).safe_substitute(
+    new_gitconfig_content = string.Template((THIS_DIR / "git" / "config.template").read_text()).safe_substitute(
         full_name=cfg.full_name, email=cfg.email, signingkey=str(pathlib.Path.home() / ".ssh" / "id_ed25519.pub")
     )
-    DotfileManager(cfg.timestamp, _logger).safe_write(gitconfig_content, pathlib.Path.home() / ".gitconfig")
+
+    existing_content = gitconfig_path.read_text() if gitconfig_path.exists() else ""
+
+    if existing_content == new_gitconfig_content:
+        _logger.info(".gitconfig is up to date")
+        return
+
+    _logger.info(".gitconfig diff")
+    for line in difflib.ndiff(
+        existing_content.splitlines(keepends=True), new_gitconfig_content.splitlines(keepends=True)
+    ):
+        _logger.info(line.rstrip())
+
+    if not confirm("Confirm new .gitconfig content?", default="y"):
+        return
+    DotfileManager(cfg.timestamp, _logger).safe_write(new_gitconfig_content, gitconfig_path)
 
 
 @stage(
