@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import collections.abc
-import difflib
 import logging
 import pathlib
 import re
@@ -22,7 +21,7 @@ XDG_CONFIG_HOME = pathlib.Path.home() / ".config"
 THIS_DIR = pathlib.Path(__file__).parent
 
 sys.path.append(str(THIS_DIR))
-from utils import Config, DotfileManager, configure_logging, confirm, indent_logger, prompt  # noqa: E402
+from utils import Config, DotfileManager, colored_diff, configure_logging, confirm, indent_logger, prompt  # noqa: E402
 
 _logger = logging.getLogger("install")
 
@@ -131,13 +130,11 @@ def create_gitconfig(cfg: Config) -> None:
         _logger.info(".gitconfig is up to date")
         return
 
-    _logger.info(".gitconfig diff")
-    for line in difflib.ndiff(
-        existing_content.splitlines(keepends=True), new_gitconfig_content.splitlines(keepends=True)
-    ):
+    _logger.info(".gitconfig diff:")
+    for line in colored_diff(existing_content, new_gitconfig_content):
         _logger.info(line.rstrip())
 
-    if not confirm("Confirm new .gitconfig content?", default="y"):
+    if not cfg.confirm_all_stages and not confirm("Confirm new .gitconfig content?", default="y"):
         return
     DotfileManager(cfg.timestamp, _logger).safe_write(new_gitconfig_content, gitconfig_path)
 

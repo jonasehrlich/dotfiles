@@ -4,8 +4,10 @@ import collections.abc
 import contextlib
 import dataclasses
 import datetime
+import difflib
 import getpass
 import logging
+import os
 import pathlib
 import platform
 import pwd
@@ -209,3 +211,49 @@ class DotfileManager:
         self._cleanup_destination_path(destination)
         self._logger.info("Write %s", destination)
         destination.write_text(text)
+
+
+def supports_color() -> bool:
+    """
+    Return True if the terminal supports color, False otherwise.
+    """
+    # Check if the output is a terminal
+    if not sys.stdout.isatty():
+        return False
+
+    # Check for TERM environment variable
+    term = os.environ.get("TERM", "")
+    if term in ("xterm", "xterm-color", "xterm-256color", "linux", "screen", "screen-256color"):
+        return True
+
+    return False
+
+
+def red(text: str) -> str:
+    return f"\033[91m{text}\033[0m"
+
+
+def green(text: str) -> str:
+    return f"\033[92m{text}\033[0m"
+
+
+def yellow(text: str) -> str:
+    return f"\033[93m{text}\033[0m"
+
+
+def colored_diff(text1: str, text2: str) -> Generator[str, Any, None]:
+    diff = difflib.ndiff(text1.splitlines(), text2.splitlines())
+    if not supports_color():
+        for line in diff:
+            yield line
+        return
+
+    for line in diff:
+        if line.startswith("- "):
+            yield red(line)
+        elif line.startswith("+ "):
+            yield green(line)
+        elif line.startswith("? "):
+            yield yellow(line)
+        else:
+            yield line
