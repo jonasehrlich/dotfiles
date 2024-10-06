@@ -96,7 +96,6 @@ class Stage:
                 sys.exit(1)
         else:
             _logger.info(f"{self._name} - done")
-        self._func(cfg)
 
 
 def stage(
