@@ -4,7 +4,7 @@ on: [push]
 jobs:
   static-checks:
     env:
-      POETRY_VERSION: "1.7.1"
+      POETRY_VERSION: "1.8.3"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,7 +20,7 @@ jobs:
         uses: snok/install-poetry@v1
         with:
           version: ${{ env.POETRY_VERSION }}
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
@@ -29,7 +29,7 @@ jobs:
       - name: Lint
         run: |
           # Stop the build if there are Python syntax errors or undefined names
-          poetry run ruff --select=E9,F63,F7,F82
+          poetry run ruff check --select=E9,F63,F7,F82
           # Default set of ruff rules with GitHub Annotations
           poetry run ruff check
       - name: Type check
@@ -46,7 +46,7 @@ jobs:
         python-version: ["3.8", "3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install zsh
@@ -64,7 +64,7 @@ jobs:
         python-version: ["3.8", "3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dotfiles
