@@ -8,18 +8,19 @@ license = "MIT"
 homepage = "https://github.com/jonasehrlich/dotfiles"
 repository = "https://github.com/jonasehrlich/dotfiles"
 documentation = "https://github.com/jonasehrlich/dotfiles"
+packages = [{ include = "installer" }]
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = ">=3.8"
+python = ">=3.10"
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.1.1"
-ruff = "^0.2.0"
-mypy = "^1.8.0"
+black = "^24.8.0"
+ruff = "^0.6.9"
+mypy = "^1.11.2"
 isort = "^5.13.2"
 
 [tool.black]
