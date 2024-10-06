@@ -42,6 +42,7 @@ packages = ["installer"]
 [tool.ruff]
 line-length = 120
 extend-include = ["install"]
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [
