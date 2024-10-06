@@ -250,6 +250,14 @@ def link_zshrc(cfg: Config) -> None:
         DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "zsh" / ".zshrc.macos", pathlib.Path.home())
 
 
+@stage(
+    "Link .vimrc",
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".vimrc", THIS_DIR / "vim" / ".vimrc"),
+)
+def link_vimrc(cfg: Config) -> None:
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "vim" / ".vimrc", pathlib.Path.home())
+
+
 def add_stage_cli_arguments() -> None:
     for _stage in STAGE_REGISTRY:
         flag_name = _stage.flag_name
@@ -281,17 +289,21 @@ def main() -> NoReturn:
         parser.exit(status=1, message=f"Error creating configuration: {exc}")
 
     try:
-        create_gitconfig(cfg)
-        link_gitignore(cfg)
-        link_tmux_conf(cfg)
-        link_pythonstartup(cfg)
-        install_omz(cfg)
-        install_fzf(cfg)
-        install_pyenv(cfg)
-        install_vscode_extensions(cfg)
-        link_zshrc(cfg)
-        install_nvm(cfg)
-        link_nvim_config(cfg)
+        for stage_ in (
+            create_gitconfig,
+            link_gitignore,
+            link_tmux_conf,
+            link_pythonstartup,
+            install_omz,
+            install_fzf,
+            install_pyenv,
+            install_vscode_extensions,
+            link_zshrc,
+            link_vimrc,
+            install_nvm,
+            link_nvim_config,
+        ):
+            stage_(cfg)
     except KeyboardInterrupt:
         parser.exit(status=2, message="\nAborted!\n")
 
