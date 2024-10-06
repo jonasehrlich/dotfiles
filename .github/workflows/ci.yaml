@@ -35,6 +35,7 @@ jobs:
       - name: Type check
         run: |
           poetry run mypy
+          poetry run mypy install
       - name: Import order check
         run: |
           poetry run isort install

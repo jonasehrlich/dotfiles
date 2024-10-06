@@ -35,7 +35,6 @@ skip = ["__init__.py"]
 
 [tool.mypy]
 strict = true
-files = ["install"]
 packages = ["installer"]
 
 [tool.ruff]
