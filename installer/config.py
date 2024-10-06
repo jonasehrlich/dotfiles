@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import collections.abc
 import dataclasses
 import datetime
 import getpass
 import platform
 import pwd
 import sys
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, cast
 
 if sys.version_info > (3, 11):
     from typing import Self
@@ -27,9 +26,7 @@ class Config:
     full_name: str
     email: str | None
     confirm_all_stages: bool
-    platform: Platform = dataclasses.field(
-        default_factory=cast(collections.abc.Callable[[], Platform], platform.system)
-    )
+    platform: Platform = dataclasses.field(default_factory=cast(Callable[[], Platform], platform.system))
     skipped_stages: list[str] = dataclasses.field(default_factory=list)
     only_stages: list[str] = dataclasses.field(default_factory=list)
     timestamp: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
