@@ -1,18 +1,18 @@
 ---
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.5.0"
+    rev: "v5.0.0"
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
         exclude: "neovim/lazy-lock.json|neovim/lazyvim.json"
       - id: trailing-whitespace
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: "24.1.1"
+    rev: "24.8.0"
     hooks:
       - id: black
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.2.0"
+    rev: "v0.6.9"
     hooks:
       - id: ruff
   - repo: https://github.com/pycqa/isort
@@ -22,6 +22,6 @@ repos:
         args:
           - "install"
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.8.0"
+    rev: "v1.11.2"
     hooks:
       - id: mypy
