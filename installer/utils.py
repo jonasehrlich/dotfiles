@@ -10,6 +10,7 @@ import os
 import pathlib
 import shutil
 import sys
+import tempfile
 from typing import Any, Generator, Literal
 
 
@@ -247,3 +248,32 @@ def sh() -> pathlib.Path:
 def git() -> pathlib.Path:
     """Get the path of the `git` executable"""
     return which("git")
+
+
+@contextlib.contextmanager
+def temp_dir(
+    suffix: str | None = None,
+    prefix: str | None = None,
+    dir: pathlib.Path | None = None,
+    ignore_cleanup_errors: bool = False,
+) -> collections.abc.Generator[pathlib.Path, None, None]:
+    with tempfile.TemporaryDirectory(
+        suffix=suffix, prefix=prefix, dir=dir, ignore_cleanup_errors=ignore_cleanup_errors
+    ) as t:
+        yield pathlib.Path(t)
+
+
+@contextlib.contextmanager
+def chdir(path: pathlib.Path) -> collections.abc.Generator[pathlib.Path, Any, None]:
+    old_cwd = pathlib.Path.cwd()
+    os.chdir(path)
+    try:
+        yield path
+    finally:
+        os.chdir(old_cwd)
+
+
+@contextlib.contextmanager
+def temp_cwd() -> collections.abc.Generator[pathlib.Path, Any, None]:
+    with temp_dir() as t, chdir(t):
+        yield t
