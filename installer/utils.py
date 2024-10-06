@@ -2,24 +2,13 @@ from __future__ import annotations
 
 import collections.abc
 import contextlib
-import dataclasses
 import datetime
 import difflib
-import getpass
 import logging
 import os
 import pathlib
-import platform
-import pwd
 import sys
-from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, cast
-
-if sys.version_info > (3, 11):
-    from typing import Self
-elif TYPE_CHECKING:
-    from typing_extensions import Self
-
-Platforms = Literal["Linux", "Darwin", "Java", "Windows"]
+from typing import Any, Generator, Literal
 
 
 def configure_logging(logger: logging.Logger, verbose: bool) -> None:
@@ -102,41 +91,6 @@ def prompt(
     if confirm_required and not confirm(f"Confirm '{resp}'?", default="y"):
         return prompt(prompt_, default=default, confirm_required=confirm_required, validator=validator)
     return resp
-
-
-@dataclasses.dataclass
-class Config:
-    username: str
-    full_name: str
-    email: str | None
-    confirm_all_stages: bool
-    platform: Platforms = dataclasses.field(default_factory=cast(Callable[[], Platforms], platform.system))
-    skipped_stages: list[str] = dataclasses.field(default_factory=list)
-    only_stages: list[str] = dataclasses.field(default_factory=list)
-    timestamp: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now)
-
-    @classmethod
-    def from_env(
-        cls,
-        email: str | None,
-        skipped_stages: list[str] | None,
-        only_stages: list[str] | None,
-        confirm_all_stages: bool,
-        **kwargs: Any,
-    ) -> Self:
-        if skipped_stages and only_stages:
-            raise ValueError("Cannot set skip and only flags in parallel")
-
-        username = getpass.getuser()
-        full_name = pwd.getpwnam(username).pw_gecos.split(",", 1)[0]
-        return cls(
-            username=username,
-            full_name=full_name,
-            email=email,
-            confirm_all_stages=confirm_all_stages,
-            skipped_stages=skipped_stages or [],
-            only_stages=only_stages or [],
-        )
 
 
 class DotfileManager:
@@ -257,3 +211,7 @@ def colored_diff(text1: str, text2: str) -> Generator[str, Any, None]:
             yield yellow(line)
         else:
             yield line
+
+
+def symlink_exists(symlink: pathlib.Path, path: pathlib.Path) -> bool:
+    return symlink.resolve() == path.resolve()

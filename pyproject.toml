@@ -28,15 +28,18 @@ line-length = 120
 [tool.isort]
 profile = "black"
 line_length = 120
-src_paths = ["."]
+src_paths = [".", "installer"]
+skip = ["__init__.py"]
+
 
 [tool.mypy]
 strict = true
 files = ["install"]
+packages = ["installer"]
 
 [tool.ruff]
 line-length = 120
-extend-include = ["install", "utils.py"]
+extend-include = ["install"]
 
 [tool.ruff.lint]
 select = [
@@ -56,4 +59,4 @@ select = [
 # Disable assert-statement and magic-value-comparison rules for tests
 "test_*.py" = ["S101", "PLR2004"]
 # Disable unused-import rule for __init__.py files
-"__init__*.py" = ["F401"]
+"__init__*.py" = ["F401", "F403"]

@@ -10,7 +10,7 @@ import shutil
 import string
 import subprocess
 import sys
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if sys.version_info > (3, 11):
     from typing import NoReturn
@@ -21,7 +21,15 @@ XDG_CONFIG_HOME = pathlib.Path.home() / ".config"
 THIS_DIR = pathlib.Path(__file__).parent
 
 sys.path.append(str(THIS_DIR))
-from utils import Config, DotfileManager, colored_diff, configure_logging, confirm, indent_logger, prompt  # noqa: E402
+from installer import STAGE_REGISTRY, Config, stage  # noqa: E402
+from installer.utils import (  # noqa: E402
+    DotfileManager,
+    colored_diff,
+    configure_logging,
+    confirm,
+    prompt,
+    symlink_exists,
+)
 
 _logger = logging.getLogger("install")
 
@@ -45,72 +53,6 @@ skip_stages_group = parser.add_argument_group(
 only_stages_group = parser.add_argument_group(
     "Only run stages", description="Arguments to only run individual stages of the installation"
 )
-
-
-def stage(
-    name: str,
-    interactive_confirm: bool = False,
-    predicate: collections.abc.Callable[[], bool] | None = None,
-    abort_on_error: bool = False,
-) -> collections.abc.Callable[..., collections.abc.Callable[[Config], None]]:
-    """Make a function to wrap a function as a stage of the installation
-
-    :param name: Name of the stage
-    :param interactive_confirm: Whether execution of this stage requires an interactive confirm, defaults to False
-    :param predicate: Function returning at runtime whether this stage should run, defaults to None
-    :param abort_on_error: Whether to abort installation on error, defaults to False
-    :return: Decorator function
-    """
-
-    def dec(func: collections.abc.Callable[[Config], None]) -> collections.abc.Callable[[Config], Any]:
-        flag_name = name.lower().replace(" ", "-").replace(".", "")
-        skip_stages_group.add_argument(
-            f"--no-{flag_name}",
-            action="append_const",
-            dest="skipped_stages",
-            const=flag_name,
-            help=f"Skip the stage '{name}'",
-        )
-        only_stages_group.add_argument(
-            f"--only-{flag_name}",
-            action="append_const",
-            dest="only_stages",
-            const=flag_name,
-            help=f"Only run the stage '{name}'",
-        )
-
-        def wrapper(cfg: Config) -> None:
-            if flag_name in cfg.skipped_stages:
-                return
-            if cfg.only_stages and flag_name not in cfg.only_stages:
-                return
-
-            if predicate is not None and not predicate():
-                _logger.info(f"{name} is not required, skip")
-                return
-            if not cfg.confirm_all_stages and interactive_confirm and not confirm(f"{name}?", default="y"):
-                return
-
-            _logger.info(f"{name} ...")
-            try:
-                with indent_logger(_logger):
-                    func(cfg)
-            except Exception as exc:
-                error_msg = f"Error during '{name}': {exc}"
-                if abort_on_error:
-                    parser.exit(status=1, message=error_msg)
-                else:
-                    _logger.error(error_msg)
-            else:
-                _logger.info(f"{name} - done")
-
-        return wrapper
-
-    return dec
-
-
-def symlink_exists(symlink: pathlib.Path, path: pathlib.Path) -> bool:
-    return symlink.resolve() == path.resolve()
 
 
 @stage("Create .gitconfig")
@@ -174,11 +116,11 @@ def link_pythonstartup(cfg: Config) -> None:
     abort_on_error=False,
 )
 def install_omz(cfg: Config) -> None:
-    subprocess.run(
+    subprocess.run(  # noqa: S602
         '/usr/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',  # noqa: S607
         stdin=subprocess.DEVNULL,
         check=True,
-        shell=True,  # noqa: S602
+        shell=True,
     )
 
 
@@ -198,8 +140,8 @@ def install_pyenv(cfg: Config) -> None:
 )
 def install_fzf(cfg: Config) -> None:
     fzf_dir = pathlib.Path.home() / ".fzf"
-    subprocess.run(
-        [  # noqa: S603
+    subprocess.run(  # noqa: S603
+        [
             "/usr/bin/git",
             "clone",
             "--depth",
@@ -214,8 +156,8 @@ def install_fzf(cfg: Config) -> None:
 
 @stage("Install nvm", interactive_confirm=True, predicate=lambda: not (pathlib.Path.home() / ".nvm").exists())
 def install_nvm(cfg: Config) -> None:
-    proc = subprocess.run(
-        [  # noqa: S603
+    proc = subprocess.run(  # noqa: S603
+        [
             "/usr/bin/curl",
             "-L",
             "-s",
@@ -234,9 +176,9 @@ def install_nvm(cfg: Config) -> None:
     if not m:
         raise RuntimeError(f"Redirected URL {proc.stdout} does not match the expected pattern")
 
-    subprocess.run(
+    subprocess.run(  # noqa: S602
         f"curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{m.group('tag')}/install.sh | bash",
-        shell=True,  # noqa: S602
+        shell=True,
         check=True,
     )
 
@@ -265,8 +207,8 @@ def install_vscode_extensions(cfg: Config) -> None:
     if not code_cmd:
         _logger.error("Executable 'code' is not visible in $PATH")
         return
-    proc = subprocess.run(
-        [code_cmd, "--list-extensions"],  # noqa: S603
+    proc = subprocess.run(  # noqa: S603
+        [code_cmd, "--list-extensions"],
         stdout=subprocess.PIPE,
         encoding="UTF-8",
         check=True,
@@ -303,7 +245,28 @@ def link_zshrc(cfg: Config) -> None:
         DotfileManager(cfg.timestamp, _logger).safe_symlink(THIS_DIR / "zsh" / ".zshrc.macos", pathlib.Path.home())
 
 
+def add_stage_cli_arguments() -> None:
+    for _stage in STAGE_REGISTRY:
+        flag_name = _stage.flag_name
+        name = _stage.name
+        skip_stages_group.add_argument(
+            f"--no-{flag_name}",
+            action="append_const",
+            dest="skipped_stages",
+            const=flag_name,
+            help=f"Skip the stage '{name}'",
+        )
+        only_stages_group.add_argument(
+            f"--only-{flag_name}",
+            action="append_const",
+            dest="only_stages",
+            const=flag_name,
+            help=f"Only run the stage '{name}'",
+        )
+
+
 def main() -> NoReturn:
+    add_stage_cli_arguments()
     namespace = parser.parse_args()
     configure_logging(_logger, namespace.verbose)
 
