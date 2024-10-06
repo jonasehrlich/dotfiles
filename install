@@ -27,8 +27,12 @@ from installer.utils import (  # noqa: E402
     colored_diff,
     configure_logging,
     confirm,
+    curl,
+    git,
     prompt,
+    sh,
     symlink_exists,
+    which,
 )
 
 _logger = logging.getLogger("install")
@@ -117,7 +121,7 @@ def link_pythonstartup(cfg: Config) -> None:
 )
 def install_omz(cfg: Config) -> None:
     subprocess.run(  # noqa: S602
-        '/usr/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',  # noqa: S607
+        f'{sh()} -c "$({curl()} -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',  # noqa: S607
         stdin=subprocess.DEVNULL,
         check=True,
         shell=True,
@@ -142,7 +146,7 @@ def install_fzf(cfg: Config) -> None:
     fzf_dir = pathlib.Path.home() / ".fzf"
     subprocess.run(  # noqa: S603
         [
-            "/usr/bin/git",
+            git(),
             "clone",
             "--depth",
             "1",
@@ -158,7 +162,7 @@ def install_fzf(cfg: Config) -> None:
 def install_nvm(cfg: Config) -> None:
     proc = subprocess.run(  # noqa: S603
         [
-            "/usr/bin/curl",
+            curl(),
             "-L",
             "-s",
             "-o",
@@ -177,7 +181,7 @@ def install_nvm(cfg: Config) -> None:
         raise RuntimeError(f"Redirected URL {proc.stdout} does not match the expected pattern")
 
     subprocess.run(  # noqa: S602
-        f"curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{m.group('tag')}/install.sh | bash",
+        f"{curl()} -o- https://raw.githubusercontent.com/nvm-sh/nvm/{m.group('tag')}/install.sh | bash",
         shell=True,
         check=True,
     )
@@ -203,8 +207,9 @@ def validate_vscode_extension_names(extensions: collections.abc.Iterable[str]) -
 
 @stage("Install VSCode extensions", interactive_confirm=True, abort_on_error=False)
 def install_vscode_extensions(cfg: Config) -> None:
-    code_cmd = shutil.which("code")
-    if not code_cmd:
+    try:
+        code_cmd = which("code")
+    except RuntimeError:
         _logger.error("Executable 'code' is not visible in $PATH")
         return
     proc = subprocess.run(  # noqa: S603

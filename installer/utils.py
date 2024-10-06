@@ -4,9 +4,11 @@ import collections.abc
 import contextlib
 import datetime
 import difflib
+import functools
 import logging
 import os
 import pathlib
+import shutil
 import sys
 from typing import Any, Generator, Literal
 
@@ -215,3 +217,33 @@ def colored_diff(text1: str, text2: str) -> Generator[str, Any, None]:
 
 def symlink_exists(symlink: pathlib.Path, path: pathlib.Path) -> bool:
     return symlink.resolve() == path.resolve()
+
+
+@functools.cache
+def which(name: str) -> pathlib.Path:
+    """Get the path of an executable with `name`
+
+    :param name: Name of the executable
+    :raises RuntimeError: Raised if the executable cannot be found
+    :return: Path of the executable
+    """
+    exec_path = shutil.which(name)
+    if exec_path is None:
+        raise RuntimeError(f"{name} executable not found")
+
+    return pathlib.Path(exec_path)
+
+
+def curl() -> pathlib.Path:
+    """Get the path of the `curl` executable"""
+    return which("curl")
+
+
+def sh() -> pathlib.Path:
+    """Get the path of the `sh` executable"""
+    return which("sh")
+
+
+def git() -> pathlib.Path:
+    """Get the path of the `git` executable"""
+    return which("git")
