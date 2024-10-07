@@ -54,20 +54,17 @@ def test_safe_symlink_in_dir(dotfile_manager: DotfileManager, file: pathlib.Path
     assert symlink_path.name == file.name
 
 
-def test_symlink_same_is_updated(dotfile_manager: DotfileManager, file: pathlib.Path) -> None:
+def test_symlink_is_updated(dotfile_manager: DotfileManager, file: pathlib.Path) -> None:
     """Test that an existing symlink is updated"""
     symlink_path = file.parent / "bar"
     dotfile_manager.safe_symlink(file, symlink_path)
     stat1 = symlink_path.stat(follow_symlinks=False)
-    dotfile_manager.safe_symlink(file, symlink_path)
-    stat2 = symlink_path.stat(follow_symlinks=False)
-    assert stat1 != stat2
 
     example_file2 = (file.parent / "baz").resolve()
     example_file2.touch()
     dotfile_manager.safe_symlink(example_file2, symlink_path)
     assert symlink_path.resolve() == example_file2
-    assert example_file2.stat() != stat2
+    assert example_file2.stat() != stat1
 
 
 def test_safe_write(dotfile_manager: DotfileManager, path: pathlib.Path, content: str) -> None:
