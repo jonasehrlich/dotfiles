@@ -21,9 +21,8 @@ XDG_CONFIG_HOME = pathlib.Path.home() / ".config"
 THIS_DIR = pathlib.Path(__file__).parent
 
 sys.path.append(str(THIS_DIR))
-from installer import STAGE_REGISTRY, Config, stage  # noqa: E402
+from installer import STAGE_REGISTRY, Config, DotfileManager, stage  # noqa: E402
 from installer.utils import (  # noqa: E402
-    DotfileManager,
     colored_diff,
     configure_logging,
     confirm,

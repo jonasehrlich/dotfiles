@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import collections.abc
 import contextlib
-import datetime
 import difflib
 import functools
 import logging
@@ -94,80 +93,6 @@ def prompt(
     if confirm_required and not confirm(f"Confirm '{resp}'?", default="y"):
         return prompt(prompt_, default=default, confirm_required=confirm_required, validator=validator)
     return resp
-
-
-class DotfileManager:
-    def __init__(self, timestamp: datetime.datetime, logger: logging.Logger) -> None:
-        self._timestamp = timestamp
-        self._logger = logger
-        self._backup_suffix = f".pre-dotfiles-installer-{self._timestamp.strftime('%Y-%m-%d_%H-%M-%S')}"
-
-    def _cleanup_destination_path(self, path: pathlib.Path) -> None:
-        self._backup_file(path)
-        self._cleanup_symlink(path)
-
-    def _backup_file(self, path: pathlib.Path) -> pathlib.Path | None:
-        """Backup an existing file in `path`
-
-        :param path: Path to back-up
-        :return: Back-up path if backed-up, else None
-        """
-        if path.is_file():
-            backup_path = path.parent / f"{path.name}{self._backup_suffix}"
-            self._logger.info(f"Rename existing {path.name} file to {backup_path}")
-            path.rename(backup_path)
-            return backup_path
-        return None
-
-    def _cleanup_symlink(self, path: pathlib.Path) -> None:
-        """Remove a symlink in `path` if it exists
-
-        :param path: Path to remove the symlink from
-        """
-        if path.is_symlink():
-            self._logger.info("Remove symlink of %s to %s", path, path.resolve())
-            path.unlink()
-
-    def _file_content_matches(self, text: str, path: pathlib.Path) -> bool:
-        """Check if the content of a file matches a string
-
-        :param text: Text to check the file content against
-        :param path: Path to check
-        :return: Whether the content of `path` matches `text`
-        """
-        if path.is_file() and path.read_text() == text:
-            return True
-        return False
-
-    def safe_symlink(self, source: pathlib.Path, destination: pathlib.Path) -> None:
-        """Create a symlink. If `destination` is an existing file, back it up.
-        If `destination` is a symlink, remove it first.
-
-        :param source: Source file
-        :param destination: Path to create the symlink in
-        """
-        if destination.is_dir():
-            destination = destination / source.name
-
-        self._cleanup_destination_path(destination)
-        self._logger.info("Create symlink from %s to %s", destination, source)
-        destination.symlink_to(source)
-
-    def safe_write(self, text: str, destination: pathlib.Path) -> None:
-        """Write `text` to a file if it differs. If the file exists already back it up first
-
-        :param text: Text to write to `destination`
-        :param destination: Path of the file to write to
-        """
-        if self._file_content_matches(text, destination):
-            self._logger.info("%s is up-to-date", destination)
-            return
-        else:
-            self._logger.info("%s differs from desired content", destination)
-
-        self._cleanup_destination_path(destination)
-        self._logger.info("Write %s", destination)
-        destination.write_text(text)
 
 
 def supports_color() -> bool:
