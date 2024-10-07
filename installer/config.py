@@ -13,7 +13,7 @@ if sys.version_info > (3, 11):
 elif TYPE_CHECKING:
     from typing_extensions import Self
 
-__all__ = ["Config"]
+__all__ = ["Config", "Platform"]
 
 Platform = Literal["Linux", "Darwin", "Java", "Windows"]
 

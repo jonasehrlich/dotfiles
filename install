@@ -21,18 +21,8 @@ XDG_CONFIG_HOME = pathlib.Path.home() / ".config"
 THIS_DIR = pathlib.Path(__file__).parent
 
 sys.path.append(str(THIS_DIR))
-from installer import STAGE_REGISTRY, Config, DotfileManager, stage  # noqa: E402
-from installer.utils import (  # noqa: E402
-    colored_diff,
-    configure_logging,
-    confirm,
-    curl,
-    git,
-    prompt,
-    sh,
-    symlink_exists,
-    which,
-)
+from installer import STAGE_REGISTRY, Config, DotfileManager, stage, tools  # noqa: E402
+from installer.utils import colored_diff, configure_logging, confirm, prompt, symlink_exists  # noqa: E402
 
 _logger = logging.getLogger("install")
 
@@ -120,7 +110,10 @@ def link_pythonstartup(cfg: Config) -> None:
 )
 def install_omz(cfg: Config) -> None:
     subprocess.run(  # noqa: S602
-        f'{sh()} -c "$({curl()} -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"',  # noqa: S607
+        (
+            f'{tools.sh.path()} -c "$({tools.curl.path()} -fsSL '
+            'https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"'
+        ),  # noqa: S607
         stdin=subprocess.DEVNULL,
         check=True,
         shell=True,
@@ -145,7 +138,7 @@ def install_fzf(cfg: Config) -> None:
     fzf_dir = pathlib.Path.home() / ".fzf"
     subprocess.run(  # noqa: S603
         [
-            git(),
+            tools.git.path(),
             "clone",
             "--depth",
             "1",
@@ -161,7 +154,7 @@ def install_fzf(cfg: Config) -> None:
 def install_nvm(cfg: Config) -> None:
     proc = subprocess.run(  # noqa: S603
         [
-            curl(),
+            tools.curl.path(),
             "-L",
             "-s",
             "-o",
@@ -180,7 +173,7 @@ def install_nvm(cfg: Config) -> None:
         raise RuntimeError(f"Redirected URL {proc.stdout} does not match the expected pattern")
 
     subprocess.run(  # noqa: S602
-        f"{curl()} -o- https://raw.githubusercontent.com/nvm-sh/nvm/{m.group('tag')}/install.sh | bash",
+        f"{tools.curl.path()} -o- https://raw.githubusercontent.com/nvm-sh/nvm/{m.group('tag')}/install.sh | bash",
         shell=True,
         check=True,
     )
@@ -207,8 +200,8 @@ def validate_vscode_extension_names(extensions: collections.abc.Iterable[str]) -
 @stage("Install VSCode extensions", interactive_confirm=True, abort_on_error=False)
 def install_vscode_extensions(cfg: Config) -> None:
     try:
-        code_cmd = which("code")
-    except RuntimeError:
+        code_cmd = tools.code.path()
+    except tools.ToolNotFoundError:
         _logger.error("Executable 'code' is not visible in $PATH")
         return
     proc = subprocess.run(  # noqa: S603
@@ -286,6 +279,12 @@ def main() -> NoReturn:
         cfg = Config.from_env(**vars(namespace))
     except Exception as exc:
         parser.exit(status=1, message=f"Error creating configuration: {exc}")
+
+    missing_tools = tools.missing_required_tools()
+    if missing_tools:
+        parser.exit(status=2, message=f"Error: Missing required tools {', '.join(t.name for t in missing_tools)}")
+    else:
+        _logger.info("Minimum required required tools are available")
 
     try:
         for stage_ in (
