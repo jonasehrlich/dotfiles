@@ -55,14 +55,14 @@ SSH_PUBLIC_KEY_PATH = SSH_PRIVATE_KEY_PATH.with_suffix(".pub")
     "Create SSH keypair",
     predicate=lambda: tools.ssh_keygen.available()
     and not (SSH_PRIVATE_KEY_PATH.exists() and SSH_PUBLIC_KEY_PATH.exists()),
+    interactive_confirm=True,
 )
 def create_ssh_keypair(cfg: Config) -> None:
-    if confirm("Create SSH keypair?", default="y"):
-        subprocess.run(  # noqa: S603
-            [tools.ssh_keygen.path(), "-t", "ed25519", "-f", str(SSH_PRIVATE_KEY_PATH), "-N", '""'],
-            check=True,
-            stderr=subprocess.DEVNULL,
-        )
+    subprocess.run(  # noqa: S603
+        [tools.ssh_keygen.path(), "-t", "ed25519", "-f", str(SSH_PRIVATE_KEY_PATH), "-N", '""'],
+        check=True,
+        stderr=subprocess.DEVNULL,
+    )
 
 
 @stage("Create .gitconfig")
