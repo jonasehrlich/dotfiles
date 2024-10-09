@@ -53,3 +53,7 @@ class Config:
             skipped_stages=skipped_stages or [],
             only_stages=only_stages or [],
         )
+
+    def with_email(self, email: str) -> Self:
+        """Return a new Config object with the email attribute replaced"""
+        return dataclasses.replace(self, email=email)

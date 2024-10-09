@@ -53,7 +53,7 @@ def create_gitconfig(cfg: Config) -> None:
     gitconfig_path = pathlib.Path.home() / ".gitconfig"
 
     if cfg.email is None:
-        cfg.email = prompt("Enter E-Mail address:")
+        cfg = cfg.with_email(prompt("Enter E-Mail address:"))
 
     new_gitconfig_content = string.Template((THIS_DIR / "git" / "config.template").read_text()).safe_substitute(
         full_name=cfg.full_name, email=cfg.email, signingkey=str(pathlib.Path.home() / ".ssh" / "id_ed25519.pub")
