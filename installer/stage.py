@@ -14,11 +14,12 @@ __all__ = ["stage", "Stage", "STAGE_REGISTRY"]
 
 
 class ActionsContainer(Protocol):
+    """Protocol to define the interface for a argparse._ActionsContainer object"""
+
     def add_argument(*args: Any, **kwargs: Any) -> Any: ...
 
 
-class StageFunc(Protocol):
-    def __call__(self, cfg: Config) -> Any: ...
+StageFunc = collections.abc.Callable[[Config], Any]
 
 
 class _StageRegistry:
