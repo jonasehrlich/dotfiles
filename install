@@ -47,6 +47,23 @@ only_stages_group = parser.add_argument_group(
     "Only run stages", description="Arguments to only run individual stages of the installation"
 )
 
+SSH_PRIVATE_KEY_PATH = pathlib.Path.home() / ".ssh" / "id_ed25519"
+SSH_PUBLIC_KEY_PATH = SSH_PRIVATE_KEY_PATH.with_suffix(".pub")
+
+
+@stage(
+    "Create SSH keypair",
+    predicate=lambda: tools.ssh_keygen.available()
+    and not (SSH_PRIVATE_KEY_PATH.exists() and SSH_PUBLIC_KEY_PATH.exists()),
+)
+def create_ssh_keypair(cfg: Config) -> None:
+    if confirm("Create SSH keypair?", default="y"):
+        subprocess.run(  # noqa: S603
+            [tools.ssh_keygen.path(), "-t", "ed25519", "-f", str(SSH_PRIVATE_KEY_PATH), "-N", '""'],
+            check=True,
+            stderr=subprocess.DEVNULL,
+        )
+
 
 @stage("Create .gitconfig")
 def create_gitconfig(cfg: Config) -> None:
@@ -288,6 +305,7 @@ def main() -> NoReturn:
 
     try:
         for stage_ in (
+            create_ssh_keypair,
             create_gitconfig,
             link_gitignore,
             link_tmux_conf,
