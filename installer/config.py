@@ -18,7 +18,7 @@ __all__ = ["Config", "Platform"]
 Platform = Literal["Linux", "Darwin", "Java", "Windows"]
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class Config:
     """Global configuration object for the installer"""
 
