@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 
 from installer.config import Config
-from installer.stage import stage
+from installer.stage import Stage, stage
 
 
 @pytest.fixture  # type:ignore
@@ -27,24 +27,28 @@ def test_stage_executed(test_stage_name: str, mock_stage_func: mock.MagicMock, c
     s = stage(test_stage_name)(mock_stage_func)
     s(config)
     mock_stage_func.assert_called_once_with(config)
+    assert s.status == Stage.Status.SUCCESS
 
 
 def test_stage_exclude_predicate(test_stage_name: str, mock_stage_func: mock.MagicMock, config: Config) -> None:
     s = stage(test_stage_name, predicate=lambda: False)(mock_stage_func)
     s(config)
     mock_stage_func.assert_not_called()
+    assert s.status == Stage.Status.SKIPPED
 
 
 def test_stage_skip_cli_flag(test_stage_name: str, mock_stage_func: mock.MagicMock) -> None:
     s = stage(test_stage_name)(mock_stage_func)
     s(Config.from_env(email=None, skipped_stages=[test_stage_name], only_stages=[], confirm_all_stages=False))
     mock_stage_func.assert_not_called()
+    assert s.status == Stage.Status.SKIPPED
 
 
 def test_stage_only_other_stage(test_stage_name: str, mock_stage_func: mock.MagicMock) -> None:
     s = stage(test_stage_name)(mock_stage_func)
     s(Config.from_env(email=None, only_stages=[test_stage_name + "foo"], skipped_stages=[], confirm_all_stages=False))
     mock_stage_func.assert_not_called()
+    assert s.status == Stage.Status.SKIPPED
 
 
 def test_stage_only_stage(test_stage_name: str, mock_stage_func: mock.MagicMock) -> None:
@@ -54,6 +58,7 @@ def test_stage_only_stage(test_stage_name: str, mock_stage_func: mock.MagicMock)
     s = stage(test_stage_name)(mock_stage_func)
     s(cfg)
     mock_stage_func.assert_called_once_with(cfg)
+    assert s.status == Stage.Status.SUCCESS
 
 
 def test_stage_error_abort(test_stage_name: str, mock_stage_func: mock.MagicMock, config: Config) -> None:
@@ -61,6 +66,14 @@ def test_stage_error_abort(test_stage_name: str, mock_stage_func: mock.MagicMock
     mock_stage_func.side_effect = Exception("test")
     with pytest.raises(SystemExit):
         s(config)
+    assert s.status == Stage.Status.FAILURE
+
+
+def test_stage_error_no_abort(test_stage_name: str, mock_stage_func: mock.MagicMock, config: Config) -> None:
+    s = stage(test_stage_name)(mock_stage_func)
+    mock_stage_func.side_effect = Exception("test")
+    s(config)
+    assert s.status == Stage.Status.FAILURE
 
 
 def test_stage_interactive_confirm(test_stage_name: str, mock_stage_func: mock.MagicMock, config: Config) -> None:
@@ -68,8 +81,8 @@ def test_stage_interactive_confirm(test_stage_name: str, mock_stage_func: mock.M
     with mock.patch("installer.stage.confirm", return_value=True) as confirm_mock:
         s(config)
         confirm_mock.assert_called_once()
-
     mock_stage_func.assert_called_once_with(config)
+    assert s.status == Stage.Status.SUCCESS
 
 
 def test_stage_interactive_confirm_no(test_stage_name: str, mock_stage_func: mock.MagicMock, config: Config) -> None:
@@ -78,6 +91,7 @@ def test_stage_interactive_confirm_no(test_stage_name: str, mock_stage_func: moc
         s(config)
         confirm_mock.assert_called_once()
     mock_stage_func.assert_not_called()
+    assert s.status == Stage.Status.SKIPPED
 
 
 def test_stage_interactive_confirm_all(test_stage_name: str, mock_stage_func: mock.MagicMock, config: Config) -> None:
@@ -87,3 +101,4 @@ def test_stage_interactive_confirm_all(test_stage_name: str, mock_stage_func: mo
         s(cfg)
         confirm_mock.assert_not_called()
     mock_stage_func.assert_called_once_with(cfg)
+    assert s.status == Stage.Status.SUCCESS

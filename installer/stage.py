@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import collections.abc
+import enum
 import logging
 import sys
 from typing import Any, Protocol
@@ -38,6 +39,15 @@ STAGE_REGISTRY = _StageRegistry()
 
 
 class Stage:
+    class Status(enum.Enum):
+        NOT_EXECUTED = "not executed"
+        SUCCESS = "success"
+        FAILURE = "failure"
+        SKIPPED = "skipped"
+
+        def __str__(self) -> str:
+            return self.value
+
     def __init__(  # noqa: PLR0913
         self,
         name: str,
@@ -59,6 +69,8 @@ class Stage:
         self._abort_on_error = abort_on_error
 
         self._logger = logging.getLogger(self.flag_name)
+        self._status = Stage.Status.NOT_EXECUTED
+
         if dependencies:
             self._logger.warning("dependencies are not supported yet")
 
@@ -74,17 +86,28 @@ class Stage:
     def flag_name(self) -> str:
         return self._flag_name
 
+    @property
+    def status(self) -> Stage.Status:
+        return self._status
+
     def __call__(self, cfg: Config) -> None:
         flag_name = self.flag_name
+        skip = False
         if flag_name in cfg.skipped_stages:
-            return
+            skip = True
+
         if cfg.only_stages and flag_name not in cfg.only_stages:
-            return
+            skip = True
 
         if self._predicate is not None and not self._predicate():
+            skip = True
             _logger.info(f"{self._name} is not required, skip")
-            return
+
         if not cfg.confirm_all_stages and self._interactive_confirm and not confirm(f"{self.name}?", default="y"):
+            skip = True
+
+        if skip:
+            self._status = Stage.Status.SKIPPED
             return
 
         _logger.info(f"{self.name} ...")
@@ -92,10 +115,12 @@ class Stage:
             with indent_logger(_logger):
                 self._func(cfg)
         except Exception as exc:
+            self._status = Stage.Status.FAILURE
             self._logger.error("Error: %s", exc)
             if self._abort_on_error:
                 sys.exit(1)
         else:
+            self._status = Stage.Status.SUCCESS
             _logger.info(f"{self._name} - done")
 
 
