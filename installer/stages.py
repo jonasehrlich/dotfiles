@@ -103,7 +103,7 @@ class Stage:
             skip = True
             _logger.info(f"{self._name} is not required, skip")
 
-        if not cfg.confirm_all_stages and self._interactive_confirm and not confirm(f"{self.name}?", default="y"):
+        if not skip and not cfg.confirm_all_stages and self._interactive_confirm and not confirm(f"{self.name}?", default="y"):
             skip = True
 
         if skip:
