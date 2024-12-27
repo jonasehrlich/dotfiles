@@ -302,7 +302,7 @@ def link_ghostty_config(cfg: Config) -> None:
 def main() -> NoReturn:
     add_stage_cli_arguments()
     namespace = parser.parse_args()
-    configure_logging(_logger, namespace.verbose)
+    configure_logging(logging.root, namespace.verbose)
 
     try:
         cfg = Config.from_env(**vars(namespace))

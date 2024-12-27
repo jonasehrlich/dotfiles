@@ -95,11 +95,13 @@ class Stage:
         skip = False
         if flag_name in cfg.skipped_stages:
             skip = True
+            _logger.debug(f"{self._name} is skipped")
 
         if cfg.only_stages and flag_name not in cfg.only_stages:
             skip = True
+            _logger.debug(f"{self._name} is not selected, skip")
 
-        if self._predicate is not None and not self._predicate():
+        if not skip and self._predicate is not None and not self._predicate():
             skip = True
             _logger.info(f"{self._name} is not required, skip")
 
