@@ -1,0 +1,5 @@
+theme = dark:GitHub Dark,light:GitHub
+font-family = ComicShannsMono Nerd Font Mono
+cursor-style-blink = true
+shell-integration-features = no-cursor
+title = " "

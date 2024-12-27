@@ -287,6 +287,18 @@ def add_stage_cli_arguments() -> None:
         )
 
 
+GHOSTTY_CONFIG_SRC_DIR = THIS_DIR / "ghostty"
+GHOSTTY_CONFIG_DEST_DIR = XDG_CONFIG_HOME / GHOSTTY_CONFIG_SRC_DIR.name
+
+
+@stage(
+    "Link ghostty config",
+    predicate=lambda: not symlink_exists(GHOSTTY_CONFIG_DEST_DIR, GHOSTTY_CONFIG_SRC_DIR),
+)
+def link_ghostty_config(cfg: Config) -> None:
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(GHOSTTY_CONFIG_SRC_DIR, GHOSTTY_CONFIG_DEST_DIR)
+
+
 def main() -> NoReturn:
     add_stage_cli_arguments()
     namespace = parser.parse_args()
@@ -310,6 +322,7 @@ def main() -> NoReturn:
             link_gitignore,
             link_tmux_conf,
             link_pythonstartup,
+            link_ghostty_config,
             install_omz,
             install_fzf,
             install_pyenv,
