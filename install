@@ -299,6 +299,18 @@ def link_ghostty_config(cfg: Config) -> None:
     DotfileManager(cfg.timestamp, _logger).safe_symlink(GHOSTTY_CONFIG_SRC_DIR, GHOSTTY_CONFIG_DEST_DIR)
 
 
+KARABINER_CONFIG_SRC_DIR = THIS_DIR / "karabiner"
+KARABINER_CONFIG_DEST_DIR = XDG_CONFIG_HOME / KARABINER_CONFIG_SRC_DIR.name
+
+
+@stage(
+    "Link karabiner config",
+    predicate=lambda: not symlink_exists(KARABINER_CONFIG_DEST_DIR, KARABINER_CONFIG_SRC_DIR),
+)
+def link_karabiner_config(cfg: Config) -> None:
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(KARABINER_CONFIG_SRC_DIR, KARABINER_CONFIG_DEST_DIR)
+
+
 def main() -> NoReturn:
     add_stage_cli_arguments()
     namespace = parser.parse_args()
@@ -323,6 +335,7 @@ def main() -> NoReturn:
             link_tmux_conf,
             link_pythonstartup,
             link_ghostty_config,
+            link_karabiner_config,
             install_omz,
             install_fzf,
             install_pyenv,
