@@ -1,0 +1,52 @@
+tap "arl/arl"
+tap "homebrew/bundle"
+# Formatting tools for C, C++, Obj-C, Java, JavaScript, TypeScript
+brew "clang-format"
+# Get a file from an HTTP, HTTPS or FTP server
+brew "curl"
+# Distributed revision control system
+brew "git"
+# Open source programming language to build simple/reliable/efficient software
+brew "go"
+# Tools and libraries to manipulate images in many formats
+brew "imagemagick"
+# Next-gen compiler infrastructure
+brew "llvm"
+# Ambitious Vim-fork focused on extensibility and agility
+brew "neovim"
+# Draw UML diagrams
+brew "plantuml"
+# Terminal multiplexer
+brew "tmux"
+# Extremely fast Python package installer and resolver, written in Rust
+brew "uv"
+# Internet file retriever
+brew "wget"
+# UNIX shell (command interpreter)
+brew "zsh"
+# Git in your tmux status bar.
+brew "arl/arl/gitmux"
+# Disk space visualiser
+cask "daisydisk"
+# Online diagram software
+cask "drawio"
+# Terminal emulator that uses platform-native UI and GPU acceleration
+cask "ghostty"
+# Open-source video transcoder
+cask "handbrake"
+# Keyboard customiser
+cask "karabiner-elements"
+# Clipboard manager
+cask "maccy"
+# File system integration
+cask "macfuse"
+# Simple application that will prevent iTunes or Apple Music from launching
+cask "notunes"
+# Move and resize windows using keyboard shortcuts or snap areas
+cask "rectangle"
+# Virtual machines UI using QEMU
+cask "utm"
+# Disk encryption software focusing on security based on TrueCrypt
+cask "veracrypt"
+# Open-source version of the X.Org X Window System
+cask "xquartz"
