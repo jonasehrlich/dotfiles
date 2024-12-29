@@ -1,5 +1,7 @@
 tap "arl/arl"
 tap "homebrew/bundle"
+# Clone of cat(1) with syntax highlighting and Git integration
+brew "bat"
 # Formatting tools for C, C++, Obj-C, Java, JavaScript, TypeScript
 brew "clang-format"
 # Get a file from an HTTP, HTTPS or FTP server
