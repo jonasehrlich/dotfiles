@@ -167,6 +167,17 @@ def install_fzf(cfg: Config) -> None:
     subprocess.run([str(fzf_dir / "install")], check=True)  # noqa: S603
 
 
+@stage(
+    "Install brew bundle",
+    interactive_confirm=True,
+    platforms=["Darwin"],
+    details="This will install all packages listed in the Brewfile",
+    predicate=lambda: tools.brew.available(),
+)
+def install_brew_bundle(cfg: Config) -> None:
+    subprocess.run([tools.brew.path(), "bundle", "install"], check=True, cwd=THIS_DIR / "brew")  # noqa: S603
+
+
 @stage("Install nvm", interactive_confirm=True, predicate=lambda: not (pathlib.Path.home() / ".nvm").exists())
 def install_nvm(cfg: Config) -> None:
     proc = subprocess.run(  # noqa: S603

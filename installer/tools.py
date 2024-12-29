@@ -37,6 +37,7 @@ sh = Tool("sh")
 zsh = Tool("zsh")
 code = Tool("code")
 ssh_keygen = Tool("ssh-keygen")
+brew = Tool("brew")
 
 REQUIRED_TOOLS = (curl, git, sh, zsh)
 
