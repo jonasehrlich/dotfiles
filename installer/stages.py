@@ -55,13 +55,13 @@ class Stage:
         interactive_confirm: bool,
         predicate: collections.abc.Callable[[], bool] | None,
         abort_on_error: bool,
-        help: str = "",
+        details: str | None = None,
         dependencies: list[str | Stage] | None = None,
     ) -> None:
         self._name = name
         self._flag_name = self.name.lower().replace(" ", "-").replace(".", "")
         self._func = func
-        self._help = help or name
+        self._details = details
         self._dependencies = dependencies or []
 
         self._interactive_confirm = interactive_confirm
@@ -79,8 +79,8 @@ class Stage:
         return self._name
 
     @property
-    def help(self) -> str:
-        return self._help
+    def details(self) -> str | None:
+        return self._details
 
     @property
     def flag_name(self) -> str:
@@ -136,6 +136,7 @@ def stage(
     interactive_confirm: bool = False,
     predicate: collections.abc.Callable[[], bool] | None = None,
     abort_on_error: bool = False,
+    details: str | None = None,
 ) -> collections.abc.Callable[..., Stage]:
     """Make a function to wrap a function as a stage of the installation
 
@@ -143,6 +144,7 @@ def stage(
     :param interactive_confirm: Whether execution of this stage requires an interactive confirm, defaults to False
     :param predicate: Function returning at runtime whether this stage should run, defaults to None
     :param abort_on_error: Whether to abort installation on error, defaults to False
+    :param details: Additional details on the stage
     :return: Decorator function
     """
 
@@ -153,6 +155,7 @@ def stage(
             interactive_confirm=interactive_confirm,
             predicate=predicate,
             abort_on_error=abort_on_error,
+            details=details,
         )
         _StageRegistry.register(_stage)
         return _stage
