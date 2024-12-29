@@ -30,7 +30,6 @@ class _StageRegistry:
     @classmethod
     def register(cls, stage: Stage) -> None:
         if not stage.is_valid_for_current_platform():
-            print("Stage '%s' is not for current platform %s, skip registration", stage.name, platform.system())
             return
         _logger.debug("Register '%s' stage", stage.name)
         cls._stages[stage.flag_name] = stage
