@@ -3,10 +3,11 @@ from __future__ import annotations
 import collections.abc
 import enum
 import logging
+import platform
 import sys
 from typing import Any, Protocol
 
-from .config import Config
+from .config import Config, Platform
 from .utils import confirm, indent_logger
 
 _logger = logging.getLogger(__name__)
@@ -28,6 +29,9 @@ class _StageRegistry:
 
     @classmethod
     def register(cls, stage: Stage) -> None:
+        if not stage.is_valid_for_current_platform():
+            print("Stage '%s' is not for current platform %s, skip registration", stage.name, platform.system())
+            return
         _logger.debug("Register '%s' stage", stage.name)
         cls._stages[stage.flag_name] = stage
 
@@ -56,12 +60,14 @@ class Stage:
         predicate: collections.abc.Callable[[], bool] | None,
         abort_on_error: bool,
         details: str | None = None,
+        platforms: collections.abc.Sequence[Platform] | None = None,
         dependencies: list[str | Stage] | None = None,
     ) -> None:
         self._name = name
         self._flag_name = self.name.lower().replace(" ", "-").replace(".", "")
         self._func = func
         self._details = details
+        self._platforms = platforms or []
         self._dependencies = dependencies or []
 
         self._interactive_confirm = interactive_confirm
@@ -89,6 +95,10 @@ class Stage:
     @property
     def status(self) -> Stage.Status:
         return self._status
+
+    def is_valid_for_current_platform(self) -> bool:
+        """Return whether this stage is supported on the current platform"""
+        return not self._platforms or platform.system() in self._platforms
 
     def __call__(self, cfg: Config) -> None:
         flag_name = self.flag_name
@@ -137,6 +147,7 @@ def stage(
     predicate: collections.abc.Callable[[], bool] | None = None,
     abort_on_error: bool = False,
     details: str | None = None,
+    platforms: collections.abc.Sequence[Platform] | None = None,
 ) -> collections.abc.Callable[..., Stage]:
     """Make a function to wrap a function as a stage of the installation
 
@@ -145,6 +156,7 @@ def stage(
     :param predicate: Function returning at runtime whether this stage should run, defaults to None
     :param abort_on_error: Whether to abort installation on error, defaults to False
     :param details: Additional details on the stage
+    :param platforms: List of platforms where this stage should run, defaults to None
     :return: Decorator function
     """
 
@@ -156,6 +168,7 @@ def stage(
             predicate=predicate,
             abort_on_error=abort_on_error,
             details=details,
+            platforms=platforms,
         )
         _StageRegistry.register(_stage)
         return _stage

@@ -287,6 +287,7 @@ KARABINER_CONFIG_DEST_DIR = XDG_CONFIG_HOME / KARABINER_CONFIG_SRC_DIR.name
     "Link Karabiner config",
     details="This is the configuration for the Karabiner Elements Keyboard customizer",
     predicate=lambda: not symlink_exists(KARABINER_CONFIG_DEST_DIR, KARABINER_CONFIG_SRC_DIR),
+    platforms=["Darwin"],
 )
 def link_karabiner_config(cfg: Config) -> None:
     DotfileManager(cfg.timestamp, _logger).safe_symlink(KARABINER_CONFIG_SRC_DIR, KARABINER_CONFIG_DEST_DIR)
@@ -332,23 +333,7 @@ def main() -> NoReturn:
         _logger.info("Minimum required required tools are available")
 
     try:
-        for stage_ in (
-            create_ssh_keypair,
-            create_gitconfig,
-            link_gitignore,
-            link_tmux_conf,
-            link_pythonstartup,
-            link_ghostty_config,
-            link_karabiner_config,
-            install_omz,
-            install_fzf,
-            install_pyenv,
-            install_vscode_extensions,
-            link_zshrc,
-            link_vimrc,
-            install_nvm,
-            link_nvim_config,
-        ):
+        for stage_ in STAGE_REGISTRY:
             stage_(cfg)
     except KeyboardInterrupt:
         parser.exit(status=2, message="\nAborted!\n")
