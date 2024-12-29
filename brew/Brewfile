@@ -44,6 +44,8 @@ cask "maccy"
 cask "macfuse"
 # Simple application that will prevent iTunes or Apple Music from launching
 cask "notunes"
+# Replacement for Docker Desktop
+cask "orbstack"
 # Move and resize windows using keyboard shortcuts or snap areas
 cask "rectangle"
 # Virtual machines UI using QEMU
