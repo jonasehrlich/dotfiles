@@ -138,15 +138,6 @@ def install_omz(cfg: Config) -> None:
 
 
 @stage(
-    "Install pyenv",
-    interactive_confirm=True,
-    predicate=lambda: not (pathlib.Path.home() / ".pyenv").exists(),
-)
-def install_pyenv(cfg: Config) -> None:
-    subprocess.run("curl https://pyenv.run | bash", shell=True, check=True)  # noqa: S602, S607
-
-
-@stage(
     "Install fzf",
     interactive_confirm=True,
     predicate=lambda: not shutil.which("fzf") and not (pathlib.Path.home() / ".fzf").exists(),
