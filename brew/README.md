@@ -5,7 +5,7 @@ The *Brewfile* lists all applications installed through `brew install` and `brew
 Create the *Brewfile* from the current environment:
 
 ```sh
-brew bundle dump --describe --no-vscode > Brewfile
+brew bundle dump --describe --no-vscode
 ```
 
 Install the dependencies from the *Brewfile*

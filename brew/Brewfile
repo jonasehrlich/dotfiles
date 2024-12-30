@@ -18,6 +18,8 @@ brew "llvm"
 brew "neovim"
 # Draw UML diagrams
 brew "plantuml"
+# Simplified and community-driven man pages
+brew "tldr"
 # Terminal multiplexer
 brew "tmux"
 # Extremely fast Python package installer and resolver, written in Rust
@@ -54,3 +56,5 @@ cask "utm"
 cask "veracrypt"
 # Open-source version of the X.Org X Window System
 cask "xquartz"
+# Multiplayer code editor
+cask "zed"
