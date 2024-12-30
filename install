@@ -295,6 +295,19 @@ def link_karabiner_config(cfg: Config) -> None:
     DotfileManager(cfg.timestamp, _logger).safe_symlink(KARABINER_CONFIG_SRC_DIR, KARABINER_CONFIG_DEST_DIR)
 
 
+ZED_CONFIG_SRC_DIR = THIS_DIR / "zed"
+ZED_CONFIG_DEST_DIR = XDG_CONFIG_HOME / ZED_CONFIG_SRC_DIR.name
+
+
+@stage(
+    "Link Zed config",
+    details="This is the configuration for the Zed editor",
+    predicate=lambda: not symlink_exists(ZED_CONFIG_DEST_DIR, ZED_CONFIG_SRC_DIR),
+)
+def link_zed_config(cfg: Config) -> None:
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(ZED_CONFIG_SRC_DIR, ZED_CONFIG_DEST_DIR)
+
+
 def add_stage_cli_arguments() -> None:
     """Add arguments to select or exclude individual stages from the installation process."""
 
