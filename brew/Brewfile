@@ -38,6 +38,8 @@ cask "drawio"
 cask "ghostty"
 # Open-source video transcoder
 cask "handbrake"
+# Free and open-source media player
+cask "iina"
 # Keyboard customiser
 cask "karabiner-elements"
 # Clipboard manager
