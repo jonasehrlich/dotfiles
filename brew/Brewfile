@@ -54,8 +54,6 @@ cask "orbstack"
 cask "rectangle"
 # Virtual machines UI using QEMU
 cask "utm"
-# Disk encryption software focusing on security based on TrueCrypt
-cask "veracrypt"
 # Open-source version of the X.Org X Window System
 cask "xquartz"
 # Multiplayer code editor
