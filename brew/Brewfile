@@ -18,6 +18,8 @@ brew "llvm"
 brew "neovim"
 # Draw UML diagrams
 brew "plantuml"
+# Utility that provides fast incremental file transfer
+brew "rsync"
 # Simplified and community-driven man pages
 brew "tldr"
 # Terminal multiplexer
@@ -54,6 +56,8 @@ cask "orbstack"
 cask "rectangle"
 # Virtual machines UI using QEMU
 cask "utm"
+# Keyboard configurator
+cask "via"
 # Open-source version of the X.Org X Window System
 cask "xquartz"
 # Multiplayer code editor
