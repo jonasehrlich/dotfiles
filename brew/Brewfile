@@ -42,6 +42,8 @@ cask "ghostty"
 cask "handbrake"
 # Free and open-source media player
 cask "iina"
+# Open-source screen recorder built with web technology
+cask "kap"
 # Keyboard customiser
 cask "karabiner-elements"
 # Clipboard manager
