@@ -5,3 +5,5 @@
 .vscode/
 # Ignore all virtual environments
 .venv*
+# Ignore token files
+token
