@@ -24,12 +24,12 @@ if [[ -d $PYENV_ROOT ]]; then
   eval "$(pyenv init -)"
 fi
 
+
 # Set PYTHONSTARTUP variable to load a script before starting an interactive shell"
 PYTHONSTARTUP="$HOME/.pythonstartup"
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 
 # Path to your oh-my-zsh installation.
@@ -48,7 +48,7 @@ ZSH_THEME="cypher"
 DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
-ENABLE_CORRECTION="true"
+# ENABLE_CORRECTION="true"
 
 # Skip the verification of insecure completion directories
 ZSH_DISABLE_COMPFIX="true"
