@@ -10,6 +10,8 @@ brew "curl"
 brew "git"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
+# Improved top (interactive process viewer)
+brew "htop"
 # Tools and libraries to manipulate images in many formats
 brew "imagemagick"
 # Next-gen compiler infrastructure
