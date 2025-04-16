@@ -30,6 +30,8 @@ brew "tmux"
 brew "uv"
 # Internet file retriever
 brew "wget"
+# Programming language designed for robustness, optimality, and clarity
+brew "zig"
 # UNIX shell (command interpreter)
 brew "zsh"
 # Git in your tmux status bar.
@@ -58,6 +60,8 @@ cask "notunes"
 cask "orbstack"
 # Move and resize windows using keyboard shortcuts or snap areas
 cask "rectangle"
+# Mesh VPN based on WireGuard
+cask "tailscale"
 # Virtual machines UI using QEMU
 cask "utm"
 # Keyboard configurator
