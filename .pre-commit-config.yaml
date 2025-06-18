@@ -8,20 +8,20 @@ repos:
         exclude: "nvim/lazy-lock.json|nvim/lazyvim.json"
       - id: trailing-whitespace
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: "24.10.0"
+    rev: "25.1.0"
     hooks:
       - id: black
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.8.4"
+    rev: "v0.12.0"
     hooks:
       - id: ruff
   - repo: https://github.com/pycqa/isort
-    rev: "5.13.2"
+    rev: "6.0.1"
     hooks:
       - id: isort
         args:
           - "install"
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.13.0"
+    rev: "v1.16.1"
     hooks:
       - id: mypy
