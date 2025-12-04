@@ -1,5 +1,3 @@
-# Ignore macOS Finder custom attribute files
-.DS_Store
 # Ignore IDEA / VSCode configuration directories
 .idea/
 .vscode/
@@ -7,3 +5,7 @@
 .venv*
 # Ignore token files
 token
+# Ignore .cache folders (used by clangd, ...)
+.cache/
+# CMake compilation database
+compile_commands.json
