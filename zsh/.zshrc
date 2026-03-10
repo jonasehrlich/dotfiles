@@ -101,3 +101,5 @@ source_file "$HOME/.fzf.zsh"
 alias zshconfig="code ~/.zshrc"
 alias ohmyzsh="code ~/.oh-my-zsh"
 alias tmuxconfig="code ~/.tmux.conf"
+
+ssh-add -l > /dev/null 2>&1 || ssh-add > /dev/null 2>&1
