@@ -10,12 +10,7 @@ import shutil
 import string
 import subprocess
 import sys
-from typing import TYPE_CHECKING
-
-if sys.version_info > (3, 11):
-    from typing import NoReturn
-elif TYPE_CHECKING:
-    from typing_extensions import NoReturn
+from typing import NoReturn
 
 XDG_CONFIG_HOME = pathlib.Path.home() / ".config"
 THIS_DIR = pathlib.Path(__file__).parent
@@ -53,8 +48,9 @@ SSH_PUBLIC_KEY_PATH = SSH_PRIVATE_KEY_PATH.with_suffix(".pub")
 
 @stage(
     "Create SSH keypair",
-    predicate=lambda: tools.ssh_keygen.available()
-    and not (SSH_PRIVATE_KEY_PATH.exists() and SSH_PUBLIC_KEY_PATH.exists()),
+    predicate=lambda: (
+        tools.ssh_keygen.available() and not (SSH_PRIVATE_KEY_PATH.exists() and SSH_PUBLIC_KEY_PATH.exists())
+    ),
     interactive_confirm=True,
 )
 def create_ssh_keypair(cfg: Config) -> None:
@@ -163,7 +159,7 @@ def install_fzf(cfg: Config) -> None:
     interactive_confirm=True,
     platforms=["Darwin"],
     details="This will install all packages listed in the Brewfile",
-    predicate=lambda: tools.brew.available(),
+    predicate=tools.brew.available,
 )
 def install_brew_bundle(cfg: Config) -> None:
     subprocess.run([tools.brew.path(), "bundle", "install"], check=True, cwd=THIS_DIR / "brew")  # noqa: S603
