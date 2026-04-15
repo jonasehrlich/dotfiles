@@ -80,7 +80,7 @@ ZSH_DISABLE_COMPFIX="true"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git poetry)
+plugins=(buf docker docker-compose git git-commit tldr uv rust)
 
 source $ZSH/oh-my-zsh.sh
 
