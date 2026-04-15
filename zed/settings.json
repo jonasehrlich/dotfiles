@@ -7,14 +7,91 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "ui_font_size": 16,
-  "buffer_font_size": 16,
-  "buffer_font_family": "ComicShannsMono Nerd Font",
+  "icon_theme": "Zed (Default)",
+  "drag_and_drop_selection": {
+    "delay": 0,
+  },
+  "show_whitespaces": "boundary",
+  "colorize_brackets": true,
+  "languages": {
+    "Proto": {
+      "tab_size": 2,
+    },
+  },
+  "git_panel": {
+    "file_icons": false,
+    "status_style": "icon",
+  },
+  "context_servers": {},
+  "debugger": {
+    "dock": "right",
+  },
+  "terminal": {
+    "dock": "right",
+  },
+  "base_keymap": "VSCode",
+  "minimap": {
+    "show": "never",
+  },
+  "buffer_font_fallbacks": ["Menlo", "Monaco", ".ZedMono"],
+  "file_types": {
+    "json": ["*.melarecipe"],
+    "dockercompose": ["**/compose/*.yaml"],
+  },
+  "ensure_final_newline_on_save": true,
+  "wrap_guides": [100, 120],
+  "show_wrap_guides": true,
+  "agent_servers": {
+    "codex-acp": {
+      "default_config_options": {
+        "mode": "auto",
+      },
+      "type": "registry",
+    },
+    "github-copilot-cli": {
+      "favorite_config_option_values": {
+        "model": ["gpt-5.4", "gpt-5.3-codex", "claude-sonnet-4.6"],
+      },
+      "type": "registry",
+    },
+  },
+  "agent": {
+    "tool_permissions": {
+      "default": "allow",
+      "tools": {
+        "terminal": {
+          "always_allow": [
+            {
+              "pattern": "cargo",
+            },
+          ],
+        },
+      },
+    },
+    "default_model": {
+      "provider": "copilot_chat",
+      "model": "gpt-5-mini",
+    },
+    "favorite_models": [],
+    "model_parameters": [],
+  },
+  "show_edit_predictions": false,
+  "ui_font_size": 15,
+  "buffer_font_size": 13.0,
+  "buffer_font_family": "ComicShannsMono Nerd Font Mono",
   "cursor_shape": "block",
-  "autosave": "on_focus_change",
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 1000,
+    },
+  },
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "One Dark"
-  }
+    "dark": "GitHub Dark Default",
+  },
+  "experimental.theme_overrides": {
+    "search.active_match_background": "#8b5707",
+    "search.match_background": "#54553a",
+  },
 }
