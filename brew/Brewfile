@@ -1,9 +1,14 @@
 tap "arl/arl"
+tap "axodotdev/tap"
 tap "homebrew/bundle"
-# General-purpose data compression with high compression ratio
-brew "xz"
 # Tool for generating GNU Standards-compliant Makefiles
 brew "automake"
+# Background rust code check
+brew "bacon"
+# Library for command-line editing
+brew "readline"
+# Bourne-Again SHell, a UNIX command interpreter
+brew "bash"
 # Cryptography and SSL/TLS Toolkit
 brew "openssl@3"
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -12,6 +17,16 @@ brew "bat"
 brew "bison"
 # Version manager for neovim
 brew "bob"
+# Resource monitor. C++ version and continuation of bashtop and bpytop
+brew "btop"
+# New way of working with Protocol Buffers
+brew "buf"
+# General-purpose data compression with high compression ratio
+brew "xz"
+# Object-file caching compiler wrapper
+brew "ccache"
+# CD/DVD/Blu-ray premastering and recording software
+brew "cdrtools"
 # Ruby environment tool
 brew "chruby"
 # Formatting tools for C, C++, Obj-C, Java, JavaScript, TypeScript
@@ -20,22 +35,38 @@ brew "clang-format"
 brew "cmake"
 # Get a file from an HTTP, HTTPS or FTP server
 brew "curl"
-# Library for command-line editing
-brew "readline"
-# Platform built on V8 to build network applications
+# Disk Usage/Free Utility - a better 'df' alternative
+brew "duf"
+# More intuitive version of du in rust
+brew "dust"
+# Simple, fast and user-friendly alternative to find
+brew "fd"
+# Play, record, convert, and stream select audio and video codecs
+brew "ffmpeg"
+# GNU compiler collection
+brew "gcc"
+# Open-source, cross-platform JavaScript runtime environment
 brew "node"
 # Interact with Google Gemini AI models from the command-line
 brew "gemini-cli"
+# GitHub command-line tool
+brew "gh"
 # Distributed revision control system
 brew "git"
+# Syntax-highlighting pager for git and diff output
+brew "git-delta"
+# Quickly rewrite git repository history
+brew "git-filter-repo"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
 # Improved top (interactive process viewer)
 brew "htop"
-# Configurable static site generator
-brew "hugo"
-# Tools and libraries to manipulate images in many formats
+# Tools and libraries to manipulate images in select formats
 brew "imagemagick"
+# Next-gen compiler infrastructure
+brew "llvm"
+# Tool to analyze #includes in C and C++ source files
+brew "include-what-you-use"
 # Git-compatible distributed version control system
 brew "jj"
 # Simple terminal UI for git commands
@@ -44,24 +75,48 @@ brew "lazygit"
 brew "libffi"
 # YAML Parser
 brew "libyaml"
+# LLVM Project Linker
+brew "lld"
 # Next-gen compiler infrastructure
 brew "llvm"
 # Language Server for the Lua language
 brew "lua-language-server"
+# Task runner and repo management tool for the web ecosystem, written in Rust
+brew "moon"
 # Small build system for use with gyp or CMake
 brew "ninja"
+# Swiss-army knife of markup format conversion
+brew "pandoc"
 # Draw UML diagrams
 brew "plantuml"
+# Fast, disk space efficient package manager
+brew "pnpm"
+# Pre-commit re-implemented in Rust
+brew "prek"
+# Protocol buffers (Google's data interchange format)
+brew "protobuf"
+# Search tool like grep and The Silver Searcher
+brew "ripgrep"
 # Utility that provides fast incremental file transfer
 brew "rsync"
 # Install Ruby, JRuby, Rubinius, TruffleRuby, or mruby
 brew "ruby-install"
 # Fast and accurate code counter with complexity and COCOMO estimates
 brew "scc"
-# Simplified and community-driven man pages
-brew "tldr"
+# Static analysis and lint tool, for (ba)sh scripts
+brew "shellcheck"
+# SMART hard drive monitoring
+brew "smartmontools"
+# Fast SQL formatter/linter
+brew "sqruff"
+# Modernized, complete, self-contained TeX/LaTeX engine
+brew "tectonic"
+# Official tldr client written in Rust
+brew "tlrc"
 # Terminal multiplexer
 brew "tmux"
+# Display directories as trees (with optional color/HTML output)
+brew "tree"
 # Extremely fast Python package installer and resolver, written in Rust
 brew "uv"
 # Internet file retriever
@@ -72,14 +127,26 @@ brew "zig"
 brew "zsh"
 # Git in your tmux status bar.
 brew "arl/arl/gitmux"
+# Shippable application packaging for Rust
+brew "axodotdev/tap/cargo-dist"
+# Open source IDE for exploring and testing APIs
+cask "bruno"
 # Use your phone as a high-quality webcam with image tuning controls
 cask "camo-studio"
+# OpenAI's official ChatGPT desktop app
+cask "chatgpt"
+# OpenJDK distribution from Amazon
+cask "corretto"
 # Disk space visualiser
 cask "daisydisk"
 # Browser for SQLite databases
 cask "db-browser-for-sqlite"
 # Online diagram software
 cask "drawio"
+# Matrix collaboration client
+cask "element"
+# GIT client
+cask "fork"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
 # Open-source video transcoder
@@ -104,6 +171,8 @@ cask "notunes"
 cask "obs"
 # Replacement for Docker Desktop
 cask "orbstack"
+# Administration and development platform for PostgreSQL
+cask "pgadmin4"
 # Move and resize windows using keyboard shortcuts or snap areas
 cask "rectangle"
 # Instant messaging application focusing on security
@@ -116,6 +185,8 @@ cask "tailscale-app"
 cask "utm"
 # Keyboard configurator
 cask "via"
+# Network protocol analyzer
+cask "wireshark-app"
 # Open-source version of the X.Org X Window System
 cask "xquartz"
 # Multiplayer code editor
@@ -124,3 +195,31 @@ cask "zed"
 cask "zen"
 # Video communication and virtual meeting platform
 cask "zoom"
+go "github.com/golangci/golangci-lint/v2/cmd/golangci-lint"
+go "golang.org/x/tools/gopls"
+go "honnef.co/go/tools/cmd/staticcheck"
+cargo "cargo-audit"
+cargo "cargo-binstall"
+cargo "cargo-edit"
+cargo "cargo-license"
+cargo "cargo-nextest"
+cargo "cargo-outdated"
+cargo "cargo-xwin"
+cargo "cargo-zigbuild"
+cargo "diesel_cli"
+cargo "release-plz"
+cargo "sea-orm-cli"
+cargo "sphinx-rustdocgen"
+uv "ansible", with: ["ansible-core"]
+uv "black"
+uv "cmakelang[yaml]"
+uv "conan"
+uv "cookiecutter"
+uv "identify"
+uv "ipython", with: ["numpy", "torch"]
+uv "mdformat", with: ["mdformat-footnote", "mdformat-gfm", "mdformat-gfm-alerts", "mdformat-myst"]
+uv "pymupdf"
+uv "pyrefly"
+uv "quizzy"
+uv "ruff"
+uv "ty"
