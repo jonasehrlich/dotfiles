@@ -1,6 +1,7 @@
 import datetime
 import logging
 import pathlib
+from typing import Optional
 
 __all__ = ["DotfileManager"]
 
@@ -45,7 +46,7 @@ class DotfileManager:
         self._logger.info("Write %s", destination)
         destination.write_text(text)
 
-    def cleanup_path(self, path: pathlib.Path) -> pathlib.Path | None:
+    def cleanup_path(self, path: pathlib.Path) -> Optional[pathlib.Path]:
         """Clean up a path. Depending on the type of the path, one of the following two steps is done:
 
         1. If the path is a symlink, it is removed
