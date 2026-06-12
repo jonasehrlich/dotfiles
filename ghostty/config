@@ -3,3 +3,4 @@ font-family = ComicShannsMono Nerd Font Mono
 cursor-style-blink = true
 shell-integration-features = no-cursor
 confirm-close-surface = false
+keybind = cmd+enter=unbind
