@@ -28,8 +28,6 @@ brew "xz"
 brew "ccache"
 # CD/DVD/Blu-ray premastering and recording software
 brew "cdrtools"
-# Ruby environment tool
-brew "chruby"
 # Formatting tools for C, C++, Obj-C, Java, JavaScript, TypeScript
 brew "clang-format"
 # Cross-platform make
