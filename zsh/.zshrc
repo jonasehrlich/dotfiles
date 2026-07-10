@@ -17,11 +17,10 @@ if [[ $(uname) == "Darwin" ]]; then
   source_file "$HOME/.zshrc.macos"
 fi
 
-# Enable pyenv if it exists
-export PYENV_ROOT="$HOME/.pyenv"
-if [[ -d $PYENV_ROOT ]]; then
-  export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init -)"
+# Enable cargo if it exists
+export CARGO_ROOT="$HOME/.cargo"
+if [[ -d $CARGO_ROOT ]]; then
+  export PATH="$CARGO_ROOT/bin:$PATH"
 fi
 
 
