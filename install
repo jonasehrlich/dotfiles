@@ -106,6 +106,16 @@ def link_tmux_conf(cfg: Config) -> None:
 
 
 @stage(
+    "Link .gitmux.conf",
+    predicate=lambda: not symlink_exists(pathlib.Path.home() / ".gitmux.conf", THIS_DIR / "gitmux" / ".gitmux.conf"),
+)
+def link_gitmux_conf(cfg: Config) -> None:
+    DotfileManager(cfg.timestamp, _logger).safe_symlink(
+        THIS_DIR / "gitmux" / "gitmux.conf", pathlib.Path.home() / ".gitmux.conf"
+    )
+
+
+@stage(
     "Link .pythonstartup",
     predicate=lambda: not symlink_exists(pathlib.Path.home() / ".pythonstartup", THIS_DIR / "python" / "startup"),
 )
