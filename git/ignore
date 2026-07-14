@@ -9,3 +9,7 @@ token
 .cache/
 # CMake compilation database
 compile_commands.json
+
+**/.claude/settings.local.json
+
+**/.claude/settings.local.json
